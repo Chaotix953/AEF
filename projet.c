@@ -6,98 +6,157 @@ typedef struct AEF
 {
     // definition des attributs
     char *nom;
-    char *q;
-    char **matriceTransition;
-    int etat;
-    char *mdp;
-    char *mot;
-
-    // definition des methodes
-    int (*transition)(struct AEF *);
+    char *alphabet;
+    int *q;
+    int *q0;
+    int *taille;
+    int *f;
+    int **matriceTransition;
+    int *etat;
 } t_AEF;
 
-void afficherMatrice(char **mat)
+//fonction pour creer la matrice de transition
+void creerMatriceTransition(t_AEF *aef, int lignes, int colonnes)
 {
-    for (int i = 0; i < 3; i++)
+    aef->matriceTransition = (int **)malloc(lignes * sizeof(int *));
+
+    // Allouer de la mémoire et copier les valeurs
+    for (int i = 0; i < lignes; i++)
     {
-        for (int j = 0; j < 3; j++)
-        {
-            printf("%c(%d) ", mat[i][j], &mat[i][j]);
-        }
-        printf("\n");
+        aef->matriceTransition[i] = (int *)malloc(colonnes * sizeof(int));
     }
+
+    //remplacer par une fonction qui remplit la matrice de transition
+    aef->matriceTransition[0][0] = aef->q[3];
+    aef->matriceTransition[0][1] = aef->q[1];
+    aef->matriceTransition[1][0] = aef->q[1];
+    aef->matriceTransition[1][1] = aef->q[2];
+    aef->matriceTransition[2][0] = -1;
+    aef->matriceTransition[2][1] = -1;
+    aef->matriceTransition[3][0] = aef->q[3];
+    aef->matriceTransition[3][1] = -1;
 }
 
-// Fonction pour déterminer l'état suivant en fonction de la transition
-int transition(struct AEF *aef)
+//creer le tableau avec les differents etats
+int *creerTableauQ(int taille)
 {
-    afficherMatrice(aef->matriceTransition);
+    int *q = (int *)malloc(taille * sizeof(int));
 
-    for (int i = 0; i < 3; i++)
+    if (q == NULL)
     {
-        //printf("%c \n", aef->mot[i]);
-
-        if (aef->matriceTransition[aef->etat][aef->etat] == aef->mot[i])
-        {
-            aef->etat += 1;
-        }
-        else
-        {
-            aef->etat = 0;
-        }
+        perror("Allocation de mémoire échouée");
+        exit(EXIT_FAILURE);
     }
-    return (aef->etat == 3) ? 1 : 0;
+    for (int i = 0; i < taille; i++)
+    {
+        q[i] = i;
+    }
+    return q;
 }
 
-t_AEF *initAEF(char *nom, char *q, char **matriceTransition, char *mdp, char *mot, int (*transition)(t_AEF *))
+//fonction pour initialiser un aef
+t_AEF *initAEF(int *q, char *nom, char *alphabet, int *f, int *taille)
 {
     t_AEF *aef = (t_AEF *)malloc(sizeof(t_AEF));
 
-    aef->nom = nom;
+    // Allouer de la mémoire pour nom et alphabet
+    aef->nom = (char *)malloc(strlen(nom) + 1);
+    strcpy(aef->nom, nom);
+
+    aef->alphabet = (char *)malloc(strlen(alphabet) + 1);
+    strcpy(aef->alphabet, alphabet);
+
+    aef->etat = (int *)calloc(1, sizeof(int));
     aef->q = q;
-    aef->etat = 0;
-    aef->matriceTransition = matriceTransition;
-    aef->mdp = mdp;
-    aef->mot = mot;
-    aef->transition = transition;
+    aef->q0 = (int *)calloc(1, sizeof(int));
+    aef->f = f;
+    aef->taille = taille;
+
+    aef->matriceTransition = NULL;
 
     return aef;
 }
 
-int main()
+void suppAEF(t_AEF *aef, int taille)
 {
-    int etat = 0;
-    char *mdp = (char *)"ABC";
-    char *mot = (char *)"ABC";
-    char q[4] = {'0', 'A', 'B', 'C'};
-
-    char **matriceTransition = (char**) calloc(3, sizeof(char*));
-    for (int i = 0; i < 3; i++)
+    // Libération de la mémoire
+    for (int i = 0; i < taille; i++)
     {
-        *(matriceTransition+i) = (char*) calloc(3, sizeof(char));
+        free(aef->matriceTransition[i]);
     }
+    free(aef->matriceTransition);
 
-    matriceTransition[0][0] = q[1];
-    matriceTransition[0][1] = q[0];
-    matriceTransition[0][2] = q[0];
-    matriceTransition[1][0] = q[0];
-    matriceTransition[1][1] = q[2];
-    matriceTransition[1][2] = q[0];
-    matriceTransition[2][0] = q[0];
-    matriceTransition[2][1] = q[0];
-    matriceTransition[2][2] = q[3];
+    free(aef->q);
+    free(aef->q0);
 
-    t_AEF *aef = initAEF(strdup("automate1"), strdup(q), (char **)matriceTransition, strdup(mdp), strdup(mot), transition);
-
-    printf("%d", aef->transition(aef));
-
-    for (int i = 0; i < 3; i++)
-    {
-        free(matriceTransition[i]);
-    }
-    free(matriceTransition);
+    free(aef->nom);
+    free(aef->alphabet);
 
     free(aef);
+}
+
+int getIndex(t_AEF *aef, char entree)
+{
+    for (int i = 0; i < 2; i++)
+    {
+        if (entree == aef->alphabet[i])
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void transition(t_AEF *aef, char entree)
+{
+    if (aef->matriceTransition[*(aef->etat)][getIndex(aef, entree)] != -1)
+    {
+        *(aef->etat) = aef->matriceTransition[*(aef->etat)][getIndex(aef, entree)];
+        for (int i = 0; i < 2; i++)
+        {
+            if (*(aef->etat) == aef->f[i])
+            {
+                printf("mot reconnu par l'automate\n");
+            }
+        }
+    }
+    else
+    {
+        printf("transition non definit %d, %c\n", *(aef->etat), entree);
+    }
+}
+
+int main()
+{
+    // initialiser les variables avec un fichier texte
+    int taille = 4;
+    int *q = creerTableauQ(taille);
+    char entre[] = "BAAB";
+    char nom[] = "automate 1";
+    char alphabet[] = "AB";
+    int f[] = {2, 3};
+
+    t_AEF *aef = initAEF(q, nom, alphabet, f, &taille);
+    creerMatriceTransition(aef, taille, strlen(alphabet));
+
+    // //matrice de transition
+    // printf("matrice de transition : \n");
+    // for (int i = 0; i < 4; i++)
+    // {
+    //     for (int j = 0; j < 2; j++)
+    //     {
+    //         printf("%d ", aef->matriceTransition[i][j]);
+    //     }
+    //     printf("\n");
+    // }
+
+    for (int i = 0; i < strlen(entre); i++)
+    {
+        transition(aef, entre[i]);
+    }
+
+    // Libération de la mémoire
+    suppAEF(aef, 4);
 
     return 0;
 }
