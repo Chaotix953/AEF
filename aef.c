@@ -127,7 +127,7 @@ t_AEF *lireFichier()
     int q0;
     char entre[] = "BAAB"; // a controler
     char alphabet[] = "";
-    int *f;
+    int f[10];
     int **matrice2D;
 
     // chercher tout les fichiers
@@ -163,11 +163,11 @@ t_AEF *lireFichier()
         int *f = malloc(sizeof(int));
 
         //compteur a 0
-        int compteur = 1;
+        int compteur = 0;
         // printf("f : ");
-        for (int i = 0; i < strlen(chaine); i++)
+        for (int i = 0; i < strlen(chaine)-1; i++)
         {
-            printf("%c", chaine[i]);
+            // printf("%c", chaine[i]);
             if (chaine[i] != ' ')
             {
                 f[compteur] = chaine[i] - '0';
@@ -175,7 +175,7 @@ t_AEF *lireFichier()
                 realloc(f, compteur+1);
             }
         }
-        printf("compteur %d\n", compteur);
+        // printf("compteur %d\n", compteur);
 
         matrice2D = (int **)creerMatrice2D(taille, strlen(alphabet));
 
