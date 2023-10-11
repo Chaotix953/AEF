@@ -121,13 +121,13 @@ int transition(t_AEF *aef, char entree)
 
 t_AEF *lireFichier()
 {
-    t_AEF *aef;
-    int taille;
-    int *q;
-    int q0;
+    t_AEF *aef = NULL;
+    int taille = 1;
+    int *q = NULL;
+    int q0 = 0;
     char entre[] = "BAAB"; // a controler
     char alphabet[] = "";
-    int *f;
+    int *f = NULL;
     char nom[] = "";
     int **matrice2D = NULL;
 
@@ -161,18 +161,20 @@ t_AEF *lireFichier()
 
         // il y a un trou dans le fichier
         fgets(chaine, 100, fichier);
-        // printf("%s", chaine);
+        printf("trou %s", chaine);
 
         fgets(chaine, 100, fichier);
 
         int *f = malloc(sizeof(int));
+
+        matrice2D = (int **)creerMatrice2D(taille, strlen(alphabet));
 
         // compteur a 0
         int compteur = 0;
         printf("f : ");
         for (int i = 0; i < strlen(chaine); i++)
         {
-            printf("%c", chaine[i]);
+            // printf("%c", chaine[i]);
             if (chaine[i] != ' ')
             {
                 f[compteur] = chaine[i] - '0';
@@ -180,31 +182,22 @@ t_AEF *lireFichier()
                 realloc(f, compteur + 1);
             }
         }
-        f[compteur] = '\0';
-        printf("compteur %d\n", compteur);
-
-        // matrice2D = (int**) creerMatrice2D(taille, strlen(alphabet));
+        for (int i = 0; i < 2; i++)
+        {
+            printf("%d ", f[i]);
+        }
+        printf("\n");
 
         printf("matrice2D: \n");
-
-        // a finir
-        int x0, x1;
-        char c = ' ';
+        int x0 = 0;
+        int x1 = 0;
+        char c = 'c';
         while (fgets(chaine, sizeof(chaine), fichier) != NULL)
         {
             sscanf(chaine, "%d %c %d", &x0, &c, &x1);
             printf("%d %c %d\n", x0, c, x1);
-            // matrice2D[x0][getIndex(alphabet, c)] = x1;
+            matrice2D[x0][getIndex(alphabet, c)] = x1;
         }
-
-        // for (int i = 0; i < taille; i++)
-        // {
-        //     for (int j = 0; j < strlen(alphabet); j++)
-        //     {
-        //         printf("%d ", matrice2D[i][j]);
-        //     }
-        //     printf("\n");
-        // }
 
         aef = initAEF(q, q0, alphabet, matrice2D, f, taille);
 
