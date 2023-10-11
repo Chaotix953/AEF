@@ -128,7 +128,7 @@ t_AEF *lireFichier()
     char entre[] = "BAAB"; // a controler
     char alphabet[] = "";
     int *f = NULL;
-    char nom[] = "";
+    char nom[100] = "";
     int **matrice2D = NULL;
 
     // chercher tout les fichiers
@@ -139,7 +139,8 @@ t_AEF *lireFichier()
         char chaine[100] = "";
 
         fgets(chaine, 100, fichier);
-        printf("%s", chaine);
+        strcpy(nom, chaine);
+        printf("nom : %s", chaine);
 
         // on stocke les valeurs du fichier dans un tableau
         fscanf(fichier, "%s", alphabet);
