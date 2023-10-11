@@ -121,14 +121,15 @@ int transition(t_AEF *aef, char entree)
 
 t_AEF *lireFichier()
 {
-    t_AEF *aef;
-    int taille;
-    int *q;
-    int q0;
+    t_AEF *aef = NULL;
+    int taille = 1;
+    int *q = NULL;
+    int q0 = 0;
     char entre[] = "BAAB"; // a controler
     char alphabet[] = "";
-    int *f;
-    int **matrice2D;
+    int *f = NULL;
+    char nom[100] = "";
+    int **matrice2D = NULL;
 
     // chercher tout les fichiers
     FILE *fichier = fopen("matrice.txt", "r");
@@ -136,68 +137,67 @@ t_AEF *lireFichier()
     if (fichier != NULL)
     {
         char chaine[100] = "";
+
+        fgets(chaine, 100, fichier);
+        strcpy(nom, chaine);
+        printf("nom : %s", chaine);
+
         // on stocke les valeurs du fichier dans un tableau
         fscanf(fichier, "%s", alphabet);
-        // printf("alphabet : %s\n", alphabet);
+        printf("alphabet : %s\n", alphabet);
 
         fscanf(fichier, "%d", &taille);
-        // printf("taille : %d\n", taille);
+        printf("taille : %d\n", taille);
 
         int *q = creerTableauQ(taille);
-        // printf("q : ");
-        // for (int i = 0; i < taille; i++)
-        // {
-        //     printf("%d", q[i]);
-        // }
-        // printf("\n");
+        printf("q : ");
+        for (int i = 0; i < taille; i++)
+        {
+            printf("%d", q[i]);
+        }
+        printf("\n");
 
         fscanf(fichier, "%d", &q0);
-        // printf("q0 : %d\n", q0);
+        printf("q0 : %d\n", q0);
 
         // il y a un trou dans le fichier
         fgets(chaine, 100, fichier);
-        // printf("%s", chaine);
+        printf("trou %s", chaine);
 
         fgets(chaine, 100, fichier);
 
         int *f = malloc(sizeof(int));
 
-        //compteur a 0
-        int compteur = 1;
-        // printf("f : ");
+        matrice2D = (int **)creerMatrice2D(taille, strlen(alphabet));
+
+        // compteur a 0
+        int compteur = 0;
+        printf("f : ");
         for (int i = 0; i < strlen(chaine); i++)
         {
-            printf("%c", chaine[i]);
+            // printf("%c", chaine[i]);
             if (chaine[i] != ' ')
             {
                 f[compteur] = chaine[i] - '0';
                 compteur += 1;
-                realloc(f, compteur+1);
+                realloc(f, compteur + 1);
             }
         }
-        printf("compteur %d\n", compteur);
+        for (int i = 0; i < 2; i++)
+        {
+            printf("%d ", f[i]);
+        }
+        printf("\n");
 
-        matrice2D = (int **)creerMatrice2D(taille, strlen(alphabet));
-
-        // printf("matrice2D: \n");
-
-        // a finir
-        int x0, x1;
-        char c = ' ';
+        printf("matrice2D: \n");
+        int x0 = 0;
+        int x1 = 0;
+        char c = 'c';
         while (fgets(chaine, sizeof(chaine), fichier) != NULL)
         {
             sscanf(chaine, "%d %c %d", &x0, &c, &x1);
-            // printf("%d %c %d\n", x0, c, x1);
+            printf("%d %c %d\n", x0, c, x1);
             matrice2D[x0][getIndex(alphabet, c)] = x1;
-        }
-
-        for (int i = 0; i < taille; i++)
-        {
-            for (int j = 0; j < strlen(alphabet); j++)
-            {
-                printf("%d ", matrice2D[i][j]);
-            }
-            printf("\n");
         }
 
         aef = initAEF(q, q0, alphabet, matrice2D, f, taille);

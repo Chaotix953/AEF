@@ -7,6 +7,7 @@
 typedef struct AEF
 {
     // definition des attributs
+    char *nom;
     char *alphabet;
     int *q;
     int q0;
