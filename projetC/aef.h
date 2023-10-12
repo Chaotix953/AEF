@@ -24,7 +24,7 @@ int **creerMatrice2D(int lignes, int colonnes);
 int *creerTableauQ(int taille);
 
 //fonction pour initialiser un aef
-t_AEF *initAEF(char *nom, int *q, int q0, char *alphabet, int **matriceTransition, int *f, int taille);
+t_AEF *initAEF(int *q, int q0, char *alphabet, int **matriceTransition, int *f, int taille);
 
 //fonction pour supprimer un aef
 void suppAEF(t_AEF *aef);
@@ -35,10 +35,6 @@ int getIndex(char *alphabet, char entree);
 //fonction pour faire des transitions 
 int transition(t_AEF *aef, char entree);
 
-void afficherAEF(t_AEF *aef);
-
 t_AEF *lireFichier();
-
-t_AEF *saisirAEF();
 
 #endif
