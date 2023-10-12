@@ -35,19 +35,23 @@ int main()
         case 13: // Touche Entrée
             if (choix == 1)
             {
-                // Traitez l'AEF saisi ici
+                system("cls");
+                t_AEF *aef = saisirAEF();
+                afficherAEF(aef);
+                system("pause");
+                suppAEF(aef);
             }
             else if (choix == 2)
             {
                 system("cls");
                 t_AEF *aef = lireFichier();
+                afficherAEF(aef);
                 system("pause");
-                // Code pour importer un AEF depuis un fichier
                 suppAEF(aef);
             }
             else if (choix == 3)
             {
-                // Code pour modifier un AEF
+
             }
             else if (choix == 4)
             {
