@@ -1,18 +1,11 @@
 #include "menu.h"
 
 // Fonction pour afficher le menu principal
-void afficherMenu(int choix)
+void afficherMenu(int choix, int nbAEF, t_AEF **liste_aef)
 {
     system("cls"); // Effacer la console
 
-    // printf("Editeur d'Automates d'Etats Finis (AEF)\n\n");
-    // printf("1. Saisir un AEF\n");
-    // printf("2. Importer un AEF depuis un fichier\n");
-    // printf("3. Modifier un AEF\n");
-    // printf("4. Sauvegarder un AEF dans un fichier\n");
-    // printf("5. Supprimer un AEF\n");
-    // printf("6. Quitter\n\n");
-    printf("Editeur de AEF\n");
+    printf("Editeur d'automate\n");
 
     for (int i = 1; i <= 6; i++)
     {
@@ -49,5 +42,12 @@ void afficherMenu(int choix)
         }
         printf("\n");
     }
+
+    printf("automate charge %d\n", nbAEF);
+    for (int i = 0; i < nbAEF; i++)
+    {
+        printf("    %s\n", liste_aef[i]->nom);
+    }
+
 }
 

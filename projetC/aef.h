@@ -13,26 +13,29 @@ typedef struct AEF
     int q0;
     int taille;
     int *f;
-    int **matriceTransition;
+    int ***matriceTransition;
+    int **nbElementsMatriceTransition;
     int etat;
 } t_AEF;
 
-//fonction pour creer la matrice de transition
+// fonction pour creer la matrice de transition
+int ***creerMatrice3D(int lignes, int colonnes);
+
 int **creerMatrice2D(int lignes, int colonnes);
 
-//creer le tableau avec les differents etats
+// creer le tableau avec les differents etats
 int *creerTableauQ(int taille);
 
-//fonction pour initialiser un aef
-t_AEF *initAEF(char *nom, int *q, int q0, char *alphabet, int **matriceTransition, int *f, int taille);
+// fonction pour initialiser un aef
+t_AEF *initAEF(char *nom, int *q, int q0, char *alphabet, int ***matriceTransition, int *f, int taille, int **nbElementsMatriceTransition);
 
-//fonction pour supprimer un aef
+// fonction pour supprimer un aef
 void suppAEF(t_AEF *aef);
 
-//fonction pour obtenir l'indice d'un caractere
+// fonction pour obtenir l'indice d'un caractere
 int getIndex(char *alphabet, char entree);
 
-//fonction pour faire des transitions 
+// fonction pour faire des transitions
 int transition(t_AEF *aef, char entree);
 
 void afficherAEF(t_AEF *aef);
