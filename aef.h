@@ -37,7 +37,7 @@ void suppAEF(t_AEF *aef);
 int getIndex(char *alphabet, char entree);
 
 // fonction pour faire des transitions
-int transition(t_AEF *aef, char entree);
+void transition(t_AEF *aef, char entree);
 
 void afficherAEF(t_AEF *aef);
 
@@ -48,5 +48,13 @@ t_AEF *saisirAEF();
 void enregistrerAEF(t_AEF *aef);
 
 void supprimerAEF(t_AEF **liste_aef, t_AEF *aef, int *nbAEF);
+
+int reconnaitreMot(t_AEF *aef, char *mot);
+
+int verifAutomateDeterministe(t_AEF *aef);
+
+int verifAutomateComplet(t_AEF *aef);
+
+void transformerAutomateComplet(t_AEF *aef);
 
 #endif

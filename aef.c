@@ -124,39 +124,26 @@ int getIndex(char *alphabet, char entree)
 }
 
 // fonction pour faire des transitions
-int transition(t_AEF *aef, char entree)
+void transition(t_AEF *aef, char entree)
 {
-    if (sizeof(aef->nbElementsMatriceTransition[aef->etat][getIndex(aef->alphabet, entree)]) != 1)
+    if (aef->nbElementsMatriceTransition[aef->etat][getIndex(aef->alphabet, entree)] != 1)
     {
-        printf("automate non deterministe %d, %c\n", aef->etat, entree);
-        return 1;
+        printf("transition non determine %d, %c\n", aef->etat, entree);
     }
     if (getIndex(aef->alphabet, entree) != -1)
     {
         if (aef->matriceTransition[aef->etat][getIndex(aef->alphabet, entree)][0] != -1)
         {
-
             aef->etat = aef->matriceTransition[aef->etat][getIndex(aef->alphabet, entree)][0];
-
-            for (int i = 0; i < strlen(aef->alphabet); i++)
-            {
-                // printf("%d == %d\n", aef->etat, aef->f[i]);
-                if (aef->etat == aef->f[i])
-                {
-                    printf("mot reconnu par l'automate\n");
-                }
-            }
         }
         else
         {
             printf("transition non definit %d, %c\n", aef->etat, entree);
         }
-        return 1;
     }
     else
     {
         printf("mot non reconnu par l'automate\n");
-        return 0;
     }
 }
 
@@ -418,4 +405,114 @@ void supprimerAEF(t_AEF **liste_aef, t_AEF *aef, int *nbAEF)
         }
     }
     (*nbAEF)--;
+}
+
+int reconnaitreMot(t_AEF *aef, char *mot)
+{
+    for (int i = 0; i < strlen(mot); i++)
+    {
+        transition(aef, mot[i]);
+        for (int j = 0; j < strlen(aef->alphabet); j++)
+        {
+            if (aef->etat == aef->f[j])
+            {
+                printf("mot reconnu par l'automate\n");
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+int verifAutomateComplet(t_AEF *aef)
+{
+    if (verifAutomateDeterministe(aef) == 1)
+    {
+        for (int i = 0; i < aef->taille; i++)
+        {
+            for (int j = 0; j < strlen(aef->alphabet); j++)
+            {
+                for (int k = 0; k < aef->nbElementsMatriceTransition[i][j]; k++)
+                {
+                    if (aef->matriceTransition[i][j][k] == -1)
+                    {
+                        printf("automate non complet\n");
+                        return 0;
+                    }
+                }
+            }
+        }
+    }
+    return 1;
+}
+
+void transformerAutomateComplet(t_AEF *aef)
+{
+    aef->taille++;
+
+    // int ***newMatrice3D = creerMatrice3D(aef->taille, strlen(aef->alphabet));
+    // for (int i = 0; i < aef->taille-1; i++)
+    // {
+    //     for (int j = 0; j < strlen(aef->alphabet); j++)
+    //     {
+    //         for (int k = 0; k < aef->nbElementsMatriceTransition[i][j]; k++)
+    //         {
+    //             newMatrice3D[i][j][k] = aef->matriceTransition[i][j][k];
+    //         }
+    //     }
+    // }
+    // for (int i = 0; i < strlen(aef->alphabet); i++)
+    // {
+    //     newMatrice3D[aef->taille - 1][i][0] = aef->taille - 1;
+    // }
+    // aef->matriceTransition = newMatrice3D;
+
+    // for (int i = 0; i < aef->taille-1; i++)
+    // {
+    //     for (int j = 0; j < strlen(aef->alphabet); j++)
+    //     {
+    //         free(aef->matriceTransition[i][j]);
+    //     }
+    //     free(aef->matriceTransition[i]);
+    // }
+    // free(aef->matriceTransition);
+
+    // int **newMatrice2D = creerMatrice2D(aef->taille, strlen(aef->alphabet));
+    // for (int i = 0; i < aef->taille-1; i++)
+    // {
+    //     for (int j = 0; j < strlen(aef->alphabet); j++)
+    //     {
+    //         newMatrice2D[i][j] = aef->nbElementsMatriceTransition[i][j];
+    //     }
+    // }
+    // for (int i = 0; i < strlen(aef->alphabet); i++)
+    // {
+    //     newMatrice2D[aef->taille-1][i] = 1;
+    // }
+    // aef->nbElementsMatriceTransition = newMatrice2D;
+
+    // for (int i = 0; i < aef->taille-1; i++)
+    // {
+    //     free(aef->matriceTransition[i]);
+    // }
+    // free(aef->matriceTransition);
+
+    aef->q = realloc(aef->q, aef->taille * sizeof(int));
+    aef->q[aef->taille - 1] = aef->taille - 1;
+}
+
+int verifAutomateDeterministe(t_AEF *aef)
+{
+    for (int i = 0; i < aef->taille; i++)
+    {
+        for (int j = 0; j < strlen(aef->alphabet); j++)
+        {
+            if (aef->nbElementsMatriceTransition[i][j] > 1)
+            {
+                printf("automate non deterministe\n");
+                return 0;
+            }
+        }
+    }
+    return 1;
 }
