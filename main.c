@@ -20,7 +20,7 @@ int main()
 
     // int choix = 1;
     // t_AEF **liste_aef = (t_AEF **)malloc(5 * sizeof(t_AEF *));
-    // int nbAEF = 0;
+    int nbAEF = 0;
     // while (1)
     // {
     //     afficherMenu(choix, nbAEF, liste_aef);
@@ -205,13 +205,21 @@ int main()
 
     t_AEF *aef = lireFichier("matrice.txt");
 
-    afficherAEF(aef);
+    t_AEF *aef_det = transformerAutomateDeterministe(aef, &nbAEF);
 
-    transformerAutomateComplet(aef);
-
-    afficherAEF(aef);
+    // afficherAEF(aef_det);
+    // printf("%d\n", aef_det->taille);
+    for (int i = 0; i < aef_det->taille; i++)
+    {
+        for(int j = 0; j < strlen(aef_det->alphabet); j++)
+        {
+            printf("%d ", aef_det->matriceTransition[i][j][0]);
+        }
+        printf("\n");
+    }
 
     suppAEF(aef);
+    suppAEF(aef_det);
 
     return 0;
 }

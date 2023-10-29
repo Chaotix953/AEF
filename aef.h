@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 typedef struct AEF
 {
@@ -20,7 +21,7 @@ typedef struct AEF
 } t_AEF;
 
 // fonction pour creer la matrice de transition
-int ***creerMatrice3D(int lignes, int colonnes);
+int ***creerMatrice3D(int lignes, int colonnes, int x);
 
 int **creerMatrice2D(int lignes, int colonnes);
 
@@ -56,5 +57,11 @@ int verifAutomateDeterministe(t_AEF *aef);
 int verifAutomateComplet(t_AEF *aef);
 
 void transformerAutomateComplet(t_AEF *aef);
+
+t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF);
+
+int factoriel(int n);
+
+int** combinaisons_v2(int p, int* e, int n, int* comb_count);
 
 #endif
