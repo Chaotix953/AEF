@@ -203,23 +203,62 @@ int main()
     //     }
     // }
 
-    t_AEF *aef = lireFichier("matrice.txt");
+    // t_AEF *aef = lireFichier("matrice.txt");
 
-    t_AEF *aef_det = transformerAutomateDeterministe(aef, &nbAEF);
+    // t_AEF *aef_det = transformerAutomateDeterministe(aef, &nbAEF);
 
-    // afficherAEF(aef_det);
-    // printf("%d\n", aef_det->taille);
-    for (int i = 0; i < aef_det->taille; i++)
+    // // afficherAEF(aef_det);
+    // printf("affichage matrice de transition :\n");
+    // for (int i = 0; i < aef_det->taille; i++)
+    // {
+    //     printf("%d ", i);
+    //     for(int j = 0; j < strlen(aef_det->alphabet); j++)
+    //     {
+    //         printf("(%d)\t", aef_det->nbElementsMatriceTransition[i][j]);
+    //         printf("{");
+    //         for (int k = 0; k < aef_det->nbElementsMatriceTransition[i][j]; k++)
+    //         {
+    //             printf("%d ", aef_det->matriceTransition[i][j][k]);
+    //         }
+    //         printf("}\t\t");
+    //     }
+    //     printf("\n");
+    // }
+
+    // suppAEF(aef);
+    // suppAEF(aef_det);
+
+    int listeQ[3] = {0, 1, 2};
+    int ***tabComb = creerTabComb(listeQ, 3, 2);
+
+    for (int i = 0; i < 8; i++)
     {
-        for(int j = 0; j < strlen(aef_det->alphabet); j++)
+        printf("%d : ", i);
+        for (int j = 0; j < 2; j++)
         {
-            printf("%d ", aef_det->matriceTransition[i][j][0]);
+            printf("{");
+            for (int k = 0; k < tabComb[i][0][0]; k++)
+            {
+                printf("%d ", tabComb[i][j][k]);
+                if (j == 0)
+                {
+                    break;
+                }
+            }
+            printf("} ");
         }
         printf("\n");
     }
 
-    suppAEF(aef);
-    suppAEF(aef_det);
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            free(tabComb[i][j]);
+        }
+        free(tabComb[i]);
+    }
+    free(tabComb);
 
     return 0;
 }

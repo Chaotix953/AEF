@@ -23,10 +23,13 @@ typedef struct AEF
 // fonction pour creer la matrice de transition
 int ***creerMatrice3D(int lignes, int colonnes, int x);
 
-int **creerMatrice2D(int lignes, int colonnes);
+int **creerMatrice2D(int lignes, int colonnes, int x);
 
 // creer le tableau avec les differents etats
 int *creerTableauQ(int taille);
+
+//fonction pour detecter des doublons dans une liste
+int detecterOccurence(int *tab, int tailleTab, int val);
 
 // fonction pour initialiser un aef
 t_AEF *initAEF(char *nom, int *q, int q0, char *alphabet, int ***matriceTransition, int *f, int taille, int **nbElementsMatriceTransition, int nbF);
@@ -62,6 +65,8 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF);
 
 int factoriel(int n);
 
-int** combinaisons_v2(int p, int* e, int n, int* comb_count);
+int** combinaisons_v2(int p, int* e, int n, int comb_count);
+
+int ***creerTabComb(int* tab, int lignes, int colonnes);
 
 #endif
