@@ -67,7 +67,7 @@ int factoriel(int n);
 
 int** combinaisons_v2(int p, int* e, int n, int comb_count);
 
-int ***creerTabComb(int* tab, int lignes, int colonnes);
+int ***creerTabComb(int* tab, int lignes);
 
 int contient(int *tab, int taille, int valeur);
 

@@ -604,7 +604,7 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
         }
     }
 
-    int ***tabComb = (int ***)creerTabComb(aef->q, aef->taille, 2);
+    int ***tabComb = (int ***)creerTabComb(aef->q, aef->taille);
     for (int i = 0; i < taille; i++)
     {
         printf("%d {", tabComb[i][0][0]);
@@ -632,14 +632,24 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
         }
     }
 
+    for (int i = 0; i < taille; i++)
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            free(tabComb[i][j]);
+        }
+        free(tabComb[i]);
+    }
+    free(tabComb);
+
     aef_det = initAEF(nom, q, q0, alphabet, matrice3D, f, taille, matrice2D, nbF);
 
     return aef_det;
 }
 
-int ***creerTabComb(int *tab, int lignes, int colonnes)
+int ***creerTabComb(int *tab, int lignes)
 {
-    int ***tabComb = creerMatrice3D(pow(2, lignes), colonnes, 1);
+    int ***tabComb = creerMatrice3D(pow(2, lignes), 2, 1);
     int index = 0;
 
     for (int p = 0; p <= lignes; p++)
