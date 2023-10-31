@@ -69,4 +69,12 @@ int** combinaisons_v2(int p, int* e, int n, int comb_count);
 
 int ***creerTabComb(int* tab, int lignes, int colonnes);
 
+int contient(int *tab, int taille, int valeur);
+
+int* supprimerDoublons(int *tab, int *taille);
+
+int *supprimerValeur(int *tab, int *taille, int valeur);
+
+void trierOrdreCroissant(int *tab, int *taille);
+
 #endif

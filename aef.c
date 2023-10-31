@@ -519,16 +519,16 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
     t_AEF *aef_det = NULL;
     int taille = pow(2, aef->taille);
     int *q = creerTableauQ(taille);
+
     int q0 = 0;
 
-    char *alphabet = (char *)malloc(strlen(aef->alphabet) * sizeof(char));
+    char *alphabet = (char *)malloc(strlen(aef->alphabet) + 1); // +1 pour le caractère nul de fin
     strcpy(alphabet, aef->alphabet);
 
     int *f = aef->f;
     char nom[100] = "automate_det";
 
     int **matrice2D = creerMatrice2D(taille, strlen(aef->alphabet), 0);
-
     int ***matrice3D = creerMatrice3D(taille, strlen(aef->alphabet), 0);
 
     for (int i = 0; i < strlen(alphabet); i++)
@@ -539,14 +539,14 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
 
     int nbF = aef->nbF;
 
-    // Copie des premieres lignes la matrice de transition dans matrice3D
+    // Copie des premières lignes de la matrice de transition dans matrice3D
     for (int i = 0; i < aef->taille; i++)
     {
         for (int j = 0; j < strlen(aef->alphabet); j++)
         {
             matrice2D[i + 1][j] = aef->nbElementsMatriceTransition[i][j];
             matrice3D[i + 1][j] = (int *)realloc(matrice3D[i + 1][j], matrice2D[i + 1][j] * sizeof(int));
-            // memcpy(&(matrice3D[i + 1][j]), &(aef->matriceTransition[i][j]), sizeof(aef->matriceTransition[i][j]));
+            memcpy(matrice3D[i + 1][j], aef->matriceTransition[i][j], aef->nbElementsMatriceTransition[i][j] * sizeof(int));
             for (int k = 0; k < matrice2D[i + 1][j]; k++)
             {
                 matrice3D[i + 1][j][k] += 1;
@@ -556,13 +556,13 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
 
     int index = aef->taille + 1;
 
-    for (int p = 2; p < aef->taille+1; p++)
+    for (int p = 2; p < aef->taille + 1; p++)
     {
         int nbComb = factoriel(aef->taille) / (factoriel(p) * factoriel(strlen(aef->alphabet) - p));
 
         int **result = combinaisons_v2(p, aef->q, aef->taille, nbComb);
 
-        //incrémentation des valeurs de aef->matriceTransition de +1
+        // Incrémentation des valeurs de matrice3D de +1
         for (int i = 0; i < nbComb; i++)
         {
             for (int j = 0; j < p; j++)
@@ -575,21 +575,61 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
         {
             for (int j = 0; j < strlen(alphabet); j++)
             {
-                
+                int indice = 0;
                 for (int k = 0; k < p; k++)
                 {
-                    memcpy(&(matrice3D[i][j]), &(matrice3D[result[i][k]][j]), sizeof(matrice3D[result[i][k]][j]));
+                    memcpy(&matrice3D[index + i][j][indice], matrice3D[result[i][k]][j], matrice2D[result[i][k]][j] * sizeof(int));
+                    indice += matrice2D[result[i][k]][j];
                     matrice2D[index + i][j] += matrice2D[result[i][k]][j];
                 }
             }
         }
+
+        index += nbComb;
 
         for (int i = 0; i < nbComb; i++)
         {
             free(result[i]);
         }
         free(result);
-        index += nbComb;
+    }
+
+    for (int i = 1; i < taille; i++)
+    {
+        for (int j = 0; j < strlen(aef->alphabet); j++)
+        {
+            matrice3D[i][j] = (int *)supprimerDoublons(&matrice3D[i][j][0], &matrice2D[i][j]);
+            matrice3D[i][j] = (int *)supprimerValeur(&matrice3D[i][j][0], &matrice2D[i][j], 0);
+            trierOrdreCroissant(&matrice3D[i][j][0], &matrice2D[i][j]);
+        }
+    }
+
+    int ***tabComb = (int ***)creerTabComb(aef->q, aef->taille, 2);
+    for (int i = 0; i < taille; i++)
+    {
+        printf("%d {", tabComb[i][0][0]);
+        for (int j = 0; j < tabComb[i][0][0]; j++)
+        {
+            printf("%d ", tabComb[i][1][j]);
+        }
+        printf("} \n");
+    }
+
+    for (int i = 0; i < taille; i++)
+    {
+        for (int j = 0; j < strlen(aef->alphabet); j++)
+        {
+            for (int k = 1; k < taille; k++)
+            {
+                if (memcmp(matrice3D[i][j], tabComb[k][1], matrice2D[i][j] * sizeof(int)) == 0 && matrice2D[i][j] == tabComb[k][0][0])
+                {
+                    // printf("k = %d, cmp == %d\n", k, memcmp(&matrice3D[4][0][0], &tabComb[k][1][0], matrice2D[i][j] * sizeof(int)));
+                    matrice2D[i][j] = 1;
+                    matrice3D[i][j] = (int *)realloc(matrice3D[i][j], sizeof(int));
+                    matrice3D[i][j][0] = k;
+                }
+            }
+        }
     }
 
     aef_det = initAEF(nom, q, q0, alphabet, matrice3D, f, taille, matrice2D, nbF);
@@ -630,6 +670,14 @@ int ***creerTabComb(int *tab, int lignes, int colonnes)
             free(result[i]);
         }
         free(result);
+    }
+
+    for (int i = 1; i < pow(2, lignes); i++)
+    {
+        for (int j = 0; j < tabComb[i][0][0]; j++)
+        {
+            tabComb[i][1][j] += 1;
+        }
     }
 
     return tabComb;
@@ -709,4 +757,82 @@ int **combinaisons_v2(int p, int *e, int n, int comb_count)
     free(indices); // Libérer la mémoire allouée pour les indices
 
     return liste_combinaisons;
+}
+
+int contient(int *tab, int taille, int valeur)
+{
+    for (int i = 0; i < taille; i++)
+    {
+        if (tab[i] == valeur)
+        {
+            return 1; // Le tableau contient la valeur
+        }
+    }
+    return 0; // Le tableau ne contient pas la valeur
+}
+
+int *supprimerDoublons(int *tab, int *taille)
+{
+    if (*taille == 1)
+    {
+        return tab;
+    }
+
+    int newSize = 0;
+    int *result = (int *)malloc(*taille * sizeof(int));
+
+    for (int i = 0; i < *taille; i++)
+    {
+        if (!contient(result, newSize, tab[i]))
+        {
+            result[newSize] = tab[i];
+            newSize++;
+        }
+    }
+
+    *taille = newSize; // Met à jour la taille du tableau
+    result = (int *)realloc(result, *taille * sizeof(int));
+
+    return result;
+}
+
+int *supprimerValeur(int *tab, int *taille, int valeur)
+{
+    if (*taille == 1)
+    {
+        return tab;
+    }
+
+    int newSize = 0;
+    int *result = (int *)malloc(*taille * sizeof(int));
+
+    for (int i = 0; i < *taille; i++)
+    {
+        if (tab[i] != valeur)
+        {
+            result[newSize] = tab[i];
+            newSize++;
+        }
+    }
+
+    *taille = newSize;
+    result = (int *)realloc(result, *taille * sizeof(int));
+
+    return result;
+}
+
+void trierOrdreCroissant(int *tab, int *taille)
+{
+    for (int i = 0; i < *taille - 1; i++)
+    {
+        for (int j = 0; j < *taille - i - 1; j++)
+        {
+            if (tab[j] > tab[j + 1])
+            {
+                int tmp = tab[j];
+                tab[j] = tab[j + 1];
+                tab[j + 1] = tmp;
+            }
+        }
+    }
 }
