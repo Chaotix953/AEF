@@ -220,7 +220,7 @@ int main()
     //         {
     //             printf("%d ", aef_det->matriceTransition[i][j][k]);
     //         }
-    //         printf("}\t\t");
+    //         printf("}\t");
     //     }
     //     printf("\n");
     // }

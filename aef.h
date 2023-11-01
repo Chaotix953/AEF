@@ -21,9 +21,9 @@ typedef struct AEF
 } t_AEF;
 
 // fonction pour creer la matrice de transition
-int ***creerMatrice3D(int lignes, int colonnes, int x);
+int ***creerMatrice3D(int lignes, int colonnes);
 
-int **creerMatrice2D(int lignes, int colonnes, int x);
+int **creerMatrice2D(int lignes, int colonnes);
 
 // creer le tableau avec les differents etats
 int *creerTableauQ(int taille);
@@ -73,7 +73,7 @@ int contient(int *tab, int taille, int valeur);
 
 int* supprimerDoublons(int *tab, int *taille);
 
-int *supprimerValeur(int *tab, int *taille, int valeur);
+int* supprimerValeur(int *tab, int *taille, int valeur);
 
 void trierOrdreCroissant(int *tab, int *taille);
 
