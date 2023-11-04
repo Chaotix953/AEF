@@ -259,8 +259,9 @@ void afficherAEF(t_AEF *aef)
     }
     printf("\n");
     printf("q0 : %d\n", aef->q0);
+    printf("nbF : %d\n", aef->nbF);
     printf("f : ");
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < aef->nbF; i++)
     {
         printf("%d ", aef->f[i]);
     }
@@ -539,10 +540,11 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
 
     int q0 = 0;
 
-    char *alphabet = (char *)malloc(strlen(aef->alphabet) + 1); // +1 pour le caractère nul de fin
+    char *alphabet = (char *)malloc(strlen(aef->alphabet)); // +1 pour le caractère nul de fin
     strcpy(alphabet, aef->alphabet);
 
-    int *f = aef->f;
+    int *f = (int*) malloc(sizeof(int));
+
     char nom[100] = "automate_det";
 
     int **matrice2D = creerMatrice2D(taille, strlen(aef->alphabet));
@@ -554,7 +556,7 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
         matrice3D[0][i][0] = 0;
     }
 
-    int nbF = aef->nbF;
+    int nbF = 1;
 
     // Copie des premières lignes de la matrice de transition dans matrice3D
     for (int i = 0; i < aef->taille; i++)
@@ -623,16 +625,6 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
 
     int ***tabComb = (int ***)creerTabComb(aef->q, aef->taille);
 
-    for (int i = 0; i < taille; i++)
-    {
-        printf("%d {", tabComb[i][0][0]);
-        for (int j = 0; j < tabComb[i][0][0]; j++)
-        {
-            printf("%d ", tabComb[i][1][j]);
-        }
-        printf("} \n");
-    }
-
     for (int i = 0; i < taille; i++) // anomalie
     {
         for (int j = 0; j < strlen(aef->alphabet); j++)
@@ -649,6 +641,26 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
             }
         }
     }
+    
+    for (int i = 1; i < taille; i++)
+    {
+        printf("%d {", tabComb[i][0][0]);
+        for (int j = 0; j < tabComb[i][0][0]; j++)
+        {
+            if (contient(aef->f, nbF, tabComb[i][1][j]-1) == 1)
+            {
+                printf("i == %d %d est inclus dans ", i, tabComb[i][1][j]);
+                f[nbF-1] = i;
+                nbF = nbF + 1;
+                f = (int*) realloc(f, nbF*sizeof(int)); 
+                break;
+            }
+            printf("%d ", tabComb[i][1][j]);
+        }
+        printf("} \n");
+    }
+    
+    aef_det = initAEF(nom, q, q0, alphabet, matrice3D, f, taille, matrice2D, nbF-1);
 
     for (int i = 0; i < taille; i++)
     {
@@ -659,8 +671,6 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
         free(tabComb[i]);
     }
     free(tabComb);
-
-    aef_det = initAEF(nom, q, q0, alphabet, matrice3D, f, taille, matrice2D, nbF);
 
     return aef_det;
 }
