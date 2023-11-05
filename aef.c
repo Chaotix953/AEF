@@ -1,7 +1,7 @@
 #include "aef.h"
 
 // fonction pour creer la matrice de transition
-int ***creerMatrice3D(int lignes, int colonnes)
+int ***creerMatrice3D(int lignes, int colonnes, int x)
 {
     // Allouer de la mémoire et copier les valeurs
     int ***matrice = (int ***)malloc(lignes * sizeof(int **));
@@ -12,14 +12,15 @@ int ***creerMatrice3D(int lignes, int colonnes)
         for (int j = 0; j < colonnes; j++)
         {
             matrice[i][j] = (int *)malloc(sizeof(int));
-            matrice[i][j][0] = -1;
+            matrice[i][j][0] = x;
         }
     }
 
     return matrice;
 }
 
-int **creerMatrice2D(int lignes, int colonnes)
+// fonction pour creer la matrice du nombre d'elements de la matrice de transition
+int **creerMatrice2D(int lignes, int colonnes, int x)
 {
     // Allouer de la mémoire et copier les valeurs
     int **matrice = (int **)malloc(lignes * sizeof(int *));
@@ -29,7 +30,7 @@ int **creerMatrice2D(int lignes, int colonnes)
         matrice[i] = (int *)malloc(colonnes * sizeof(int));
         for (int j = 0; j < colonnes; j++)
         {
-            matrice[i][j] = 0;
+            matrice[i][j] = x;
         }
     }
 
@@ -167,71 +168,70 @@ t_AEF *lireFichier(char *dir)
     int **matrice2D = NULL;
     int nbF = 1;
 
-    // chercher tout les fichiers
     FILE *fichier = fopen(dir, "r");
 
     if (fichier != NULL)
     {
         char chaine[100] = "";
 
+        // Lecture des valeurs du fichier
         fscanf(fichier, "%s", nom);
-
-        // on stocke les valeurs du fichier dans un tableau
         fscanf(fichier, "%s", alphabet);
-
         fscanf(fichier, "%d", &taille);
 
-        int *q = creerTableauQ(taille);
-
+        // Allocation des tableaux q et f
+        q = creerTableauQ(taille);
         fscanf(fichier, "%d", &q0);
 
-        // il y a un trou dans le fichier
-        fgets(chaine, 100, fichier);
+        // Lecture de la ligne vide
+        fgets(chaine, sizeof(chaine), fichier);
 
-        int *f = malloc(sizeof(int));
-
-        fgets(chaine, 100, fichier);
+        // Allocation et lecture du tableau f
+        f = (int *)malloc(taille * sizeof(int));
         int compteur = 0;
-        for (int i = 0; i < strlen(chaine); i++)
-        {
-            // printf("%c", chaine[i]);
-            if (chaine[i] != ' ')
-            {
-                f[compteur] = chaine[i] - '0';
-                compteur += 1;
-                f = (int *)realloc(f, compteur + 1);
-            }
-        }
-        nbF = compteur - 1;
 
-        matrice2D = creerMatrice2D(taille, strlen(alphabet));
+        fgets(chaine, sizeof(chaine), fichier);
+        char *token = strtok(chaine, " ");
+        while (token != NULL)
+        {
+            f[compteur] = atoi(token);
+            compteur++;
+            f = (int *)realloc(f, (compteur + 1) * sizeof(int));
+            token = strtok(NULL, " ");
+        }
+        nbF = compteur;
+
+        // Allocation et initialisation de la matrice2D
+        matrice2D = creerMatrice2D(taille, strlen(alphabet), 1);
+
         for (int i = 0; i < taille; i++)
         {
             for (int j = 0; j < strlen(alphabet); j++)
             {
-                matrice2D[i][j] = matrice2D[i][j] + 1;
+                matrice2D[i][j] = 1;
             }
         }
 
         int x0 = 0;
         int x1 = 0;
         char c = 'c';
-        matrice3D = (int ***)creerMatrice3D(taille, strlen(alphabet));
+        matrice3D = (int ***)creerMatrice3D(taille, strlen(alphabet), -1);
 
-        // probleme a corriger
+        // Lecture de la suite du fichier et construction de matrice3D
         while (fgets(chaine, sizeof(chaine), fichier) != NULL)
         {
             sscanf(chaine, "%d %c %d", &x0, &c, &x1);
-            if (matrice2D[x0][getIndex(alphabet, c)] == 1 && matrice3D[x0][getIndex(alphabet, c)][0] == -1)
+            int index = getIndex(alphabet, c);
+
+            if (matrice2D[x0][index] == 1 && matrice3D[x0][index][0] == -1)
             {
-                matrice3D[x0][getIndex(alphabet, c)][0] = x1;
+                matrice3D[x0][index][0] = x1;
             }
-            // regler le pb ligne 217 matrice3D[x0][getIndex(alphabet, c)][matrice2D[x0][getIndex(alphabet, c)] - 2] != x1 qui empeche d'entrer 1 fois la meme valeur
-            else if (matrice2D[x0][getIndex(alphabet, c)] >= 1 && matrice3D[x0][getIndex(alphabet, c)][0] != -1 && detecterOccurence((int *)matrice3D[x0][getIndex(alphabet, c)], matrice2D[x0][getIndex(alphabet, c)], x1) != 1)
+            else if (matrice2D[x0][index] >= 1 && matrice3D[x0][index][0] != -1 && detecterOccurence(matrice3D[x0][index], matrice2D[x0][index], x1) != 1)
             {
-                matrice2D[x0][getIndex(alphabet, c)] += 1;
-                matrice3D[x0][getIndex(alphabet, c)] = (int *)realloc(matrice3D[x0][getIndex(alphabet, c)], matrice2D[x0][getIndex(alphabet, c)]);
-                matrice3D[x0][getIndex(alphabet, c)][matrice2D[x0][getIndex(alphabet, c)] - 1] = x1;
+                matrice2D[x0][index] += 1;
+                matrice3D[x0][index] = (int *)realloc(matrice3D[x0][index], matrice2D[x0][index] * sizeof(int));
+                matrice3D[x0][index][matrice2D[x0][index] - 1] = x1;
             }
         }
 
@@ -241,7 +241,7 @@ t_AEF *lireFichier(char *dir)
     }
     else
     {
-        printf("fichier non trouve\n");
+        printf("Fichier non trouvé\n");
     }
 
     return aef;
@@ -337,8 +337,8 @@ t_AEF *saisirAEF()
     printf("\n");
     printf("matrice2D: \n");
 
-    matrice3D = (int ***)creerMatrice3D(taille, strlen(alphabet));
-    matrice2D = (int **)creerMatrice2D(taille, strlen(alphabet));
+    matrice3D = (int ***)creerMatrice3D(taille, strlen(alphabet), -1);
+    matrice2D = (int **)creerMatrice2D(taille, strlen(alphabet), 1);
     for (int i = 0; i < taille; i++)
     {
         for (int j = 0; j < strlen(alphabet); j++)
@@ -472,7 +472,7 @@ void transformerAutomateComplet(t_AEF *aef)
 {
     aef->taille++;
 
-    int ***newMatrice3D = creerMatrice3D(aef->taille, strlen(aef->alphabet));
+    int ***newMatrice3D = creerMatrice3D(aef->taille, strlen(aef->alphabet), -1);
     for (int i = 0; i < aef->taille - 1; i++)
     {
         for (int j = 0; j < strlen(aef->alphabet); j++)
@@ -489,7 +489,7 @@ void transformerAutomateComplet(t_AEF *aef)
     }
     aef->matriceTransition = newMatrice3D;
 
-    int **newMatrice2D = creerMatrice2D(aef->taille, strlen(aef->alphabet));
+    int **newMatrice2D = creerMatrice2D(aef->taille, strlen(aef->alphabet), 1);
     for (int i = 0; i < aef->taille; i++)
     {
         for (int j = 0; j < strlen(aef->alphabet); j++)
@@ -543,12 +543,12 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
     char *alphabet = (char *)malloc(strlen(aef->alphabet)); // +1 pour le caractère nul de fin
     strcpy(alphabet, aef->alphabet);
 
-    int *f = (int*) malloc(sizeof(int));
+    int *f = (int *)malloc(sizeof(int));
 
     char nom[100] = "automate_det";
 
-    int **matrice2D = creerMatrice2D(taille, strlen(aef->alphabet));
-    int ***matrice3D = creerMatrice3D(taille, strlen(aef->alphabet));
+    int **matrice2D = creerMatrice2D(taille, strlen(aef->alphabet), 1);
+    int ***matrice3D = creerMatrice3D(taille, strlen(aef->alphabet), 0);
 
     for (int i = 0; i < strlen(alphabet); i++)
     {
@@ -597,8 +597,18 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
                 int indice = 0;
                 for (int k = 0; k < p; k++)
                 {
-                    memcpy(&matrice3D[index + i][j][indice], matrice3D[result[i][k]][j], matrice2D[result[i][k]][j] * sizeof(int));
-                    indice += matrice2D[result[i][k]][j];
+                    // Allouer de l'espace pour les éléments dans la matrice destination
+                    int *destination_data = (int *)malloc((matrice2D[index + i][j] + matrice2D[result[i][k]][j]) * sizeof(int));
+
+                    // Copier les éléments existants dans la destination
+                    memcpy(destination_data, matrice3D[index + i][j], matrice2D[index + i][j] * sizeof(int));
+
+                    // Copier les éléments de la source à la destination
+                    memcpy(destination_data + matrice2D[index + i][j], matrice3D[result[i][k]][j], matrice2D[result[i][k]][j] * sizeof(int));
+
+                    // Mettre à jour la matrice3D et matrice2D pour la destination
+                    free(matrice3D[index + i][j]);
+                    matrice3D[index + i][j] = destination_data;
                     matrice2D[index + i][j] += matrice2D[result[i][k]][j];
                 }
             }
@@ -625,15 +635,15 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
 
     int ***tabComb = (int ***)creerTabComb(aef->q, aef->taille);
 
+    // copier les tabComb dans la matrice de transition
     for (int i = 0; i < taille; i++) // anomalie
     {
-        for (int j = 0; j < strlen(aef->alphabet); j++)
+        for (int j = 0; j < strlen(alphabet); j++)
         {
             for (int k = 1; k < taille; k++)
             {
                 if (memcmp(matrice3D[i][j], tabComb[k][1], matrice2D[i][j] * sizeof(int)) == 0 && matrice2D[i][j] == tabComb[k][0][0])
                 {
-                    // printf("k = %d, cmp == %d\n", k, memcmp(&matrice3D[4][0][0], &tabComb[k][1][0], matrice2D[i][j] * sizeof(int)));
                     matrice2D[i][j] = 1;
                     matrice3D[i][j] = (int *)realloc((int *)&matrice3D[i][j][0], sizeof(int));
                     matrice3D[i][j][0] = k;
@@ -641,26 +651,26 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
             }
         }
     }
-    
+
     for (int i = 1; i < taille; i++)
     {
         printf("%d {", tabComb[i][0][0]);
         for (int j = 0; j < tabComb[i][0][0]; j++)
         {
-            if (contient(aef->f, nbF, tabComb[i][1][j]-1) == 1)
+            if (contient(aef->f, nbF, tabComb[i][1][j] - 1) == 1)
             {
                 printf("i == %d %d est inclus dans ", i, tabComb[i][1][j]);
-                f[nbF-1] = i;
+                f[nbF - 1] = i;
                 nbF = nbF + 1;
-                f = (int*) realloc(f, nbF*sizeof(int)); 
+                f = (int *)realloc(f, nbF * sizeof(int));
                 break;
             }
             printf("%d ", tabComb[i][1][j]);
         }
         printf("} \n");
     }
-    
-    aef_det = initAEF(nom, q, q0, alphabet, matrice3D, f, taille, matrice2D, nbF-1);
+
+    aef_det = initAEF(nom, q, q0, alphabet, matrice3D, f, taille, matrice2D, nbF - 1);
 
     for (int i = 0; i < taille; i++)
     {
@@ -677,7 +687,7 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
 
 int ***creerTabComb(int *tab, int lignes)
 {
-    int ***tabComb = creerMatrice3D(pow(2, lignes), 2);
+    int ***tabComb = creerMatrice3D(pow(2, lignes), 2, 0);
 
     int index = 0;
 

@@ -21,9 +21,9 @@ typedef struct AEF
 } t_AEF;
 
 // fonction pour creer la matrice de transition
-int ***creerMatrice3D(int lignes, int colonnes);
+int ***creerMatrice3D(int lignes, int colonnes, int x);
 
-int **creerMatrice2D(int lignes, int colonnes);
+int **creerMatrice2D(int lignes, int colonnes, int x);
 
 // creer le tableau avec les differents etats
 int *creerTableauQ(int taille);
