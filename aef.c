@@ -235,6 +235,16 @@ t_AEF *lireFichier(char *dir)
             }
         }
 
+        for (int i = 1; i < taille; i++)
+        {
+            for (int j = 0; j < strlen(alphabet); j++)
+            {
+                matrice3D[i][j] = (int *)supprimerDoublons(&matrice3D[i][j][0], &matrice2D[i][j]);
+                matrice3D[i][j] = (int *)supprimerValeur(&matrice3D[i][j][0], &matrice2D[i][j], 0);
+                trierOrdreCroissant(&matrice3D[i][j][0], &matrice2D[i][j]);
+            }
+        }
+
         aef = initAEF(nom, q, q0, alphabet, matrice3D, f, taille, matrice2D, nbF);
 
         fclose(fichier);
@@ -371,6 +381,16 @@ t_AEF *saisirAEF()
         scanf("%c", &continuer);
     } while (continuer == 'o');
     system("cls");
+
+    for (int i = 1; i < taille; i++)
+    {
+        for (int j = 0; j < strlen(alphabet); j++)
+        {
+            matrice3D[i][j] = (int *)supprimerDoublons(&matrice3D[i][j][0], &matrice2D[i][j]);
+            matrice3D[i][j] = (int *)supprimerValeur(&matrice3D[i][j][0], &matrice2D[i][j], 0);
+            trierOrdreCroissant(&matrice3D[i][j][0], &matrice2D[i][j]);
+        }
+    }
 
     t_AEF *aef = initAEF(nom, q, q0, alphabet, matrice3D, f, taille, matrice2D, nbF);
     return aef;
@@ -536,6 +556,7 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
     (*nbAEF)++;
     t_AEF *aef_det = NULL;
     int taille = pow(2, aef->taille);
+
     int *q = creerTableauQ(taille);
 
     int q0 = 0;
@@ -549,12 +570,6 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
 
     int **matrice2D = creerMatrice2D(taille, strlen(aef->alphabet), 1);
     int ***matrice3D = creerMatrice3D(taille, strlen(aef->alphabet), 0);
-
-    for (int i = 0; i < strlen(alphabet); i++)
-    {
-        matrice2D[0][i] = 1;
-        matrice3D[0][i][0] = 0;
-    }
 
     int nbF = 1;
 
@@ -575,18 +590,17 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
 
     int index = aef->taille + 1;
 
-    for (int p = 2; p < aef->taille + 1; p++)
+    for (int p = 2; p < aef->taille + 1; p++) // matrice2.txt ne fonctionne pas
     {
-        int nbComb = factoriel(aef->taille) / (factoriel(p) * factoriel(strlen(aef->alphabet) - p));
+        int nbComb = factoriel(aef->taille) / (factoriel(p) * factoriel(aef->taille - p));
 
         int **result = combinaisons_v2(p, aef->q, aef->taille, nbComb);
 
-        // Incrémentation des valeurs de matrice3D de +1
         for (int i = 0; i < nbComb; i++)
         {
             for (int j = 0; j < p; j++)
             {
-                result[i][j] += 1;
+                result[i][j] = result[i][j] + 1;
             }
         }
 
@@ -623,12 +637,12 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
         free(result);
     }
 
-    for (int i = 1; i < taille; i++) // anomalie
+    for (int i = 1; i < taille; i++)
     {
         for (int j = 0; j < strlen(aef->alphabet); j++)
         {
-            matrice3D[i][j] = (int *)supprimerValeur(&matrice3D[i][j][0], &matrice2D[i][j], 0);
             matrice3D[i][j] = (int *)supprimerDoublons(&matrice3D[i][j][0], &matrice2D[i][j]);
+            matrice3D[i][j] = (int *)supprimerValeur(&matrice3D[i][j][0], &matrice2D[i][j], 0);
             trierOrdreCroissant(&matrice3D[i][j][0], &matrice2D[i][j]);
         }
     }
@@ -654,20 +668,20 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
 
     for (int i = 1; i < taille; i++)
     {
-        printf("%d {", tabComb[i][0][0]);
+        // printf("%d {", tabComb[i][0][0]);
         for (int j = 0; j < tabComb[i][0][0]; j++)
         {
             if (contient(aef->f, nbF, tabComb[i][1][j] - 1) == 1)
             {
-                printf("i == %d %d est inclus dans ", i, tabComb[i][1][j]);
+                // printf("i == %d %d est inclus dans ", i, tabComb[i][1][j]);
                 f[nbF - 1] = i;
                 nbF = nbF + 1;
                 f = (int *)realloc(f, nbF * sizeof(int));
                 break;
             }
-            printf("%d ", tabComb[i][1][j]);
+            // printf("%d ", tabComb[i][1][j]);
         }
-        printf("} \n");
+        // printf("} \n");
     }
 
     aef_det = initAEF(nom, q, q0, alphabet, matrice3D, f, taille, matrice2D, nbF - 1);

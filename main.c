@@ -203,16 +203,19 @@ int main()
     //     }
     // }
 
-    t_AEF *aef = lireFichier("matrice.txt");
+    t_AEF *aef = lireFichier("matrice2.txt");
+    
+    afficherAEF(aef);
 
     t_AEF *aef_det = transformerAutomateDeterministe(aef, &nbAEF);
 
     afficherAEF(aef_det);
-    // printf("affichage matrice de transition :\n");
+
+    // printf("\naffichage matrice de transition :\n");
     // for (int i = 0; i < aef_det->taille; i++)
     // {
     //     printf("%d ", i);
-    //     for(int j = 0; j < strlen(aef_det->alphabet); j++)
+    //     for (int j = 0; j < strlen(aef_det->alphabet); j++)
     //     {
     //         printf("(%d)\t", aef_det->nbElementsMatriceTransition[i][j]);
     //         printf("{");
@@ -225,10 +228,8 @@ int main()
     //     printf("\n");
     // }
 
-    suppAEF(aef);
     suppAEF(aef_det);
-
-
+    suppAEF(aef);
 
     return 0;
 }
