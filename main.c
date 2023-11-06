@@ -207,9 +207,9 @@ int main()
     
     afficherAEF(aef);
 
-    t_AEF *aef_det = transformerAutomateDeterministe(aef, &nbAEF);
+    // t_AEF *aef_det = transformerAutomateDeterministe(aef, &nbAEF);
 
-    afficherAEF(aef_det);
+    // afficherAEF(aef_det);
 
     // printf("\naffichage matrice de transition :\n");
     // for (int i = 0; i < aef_det->taille; i++)
@@ -228,7 +228,7 @@ int main()
     //     printf("\n");
     // }
 
-    suppAEF(aef_det);
+    // suppAEF(aef_det);
     suppAEF(aef);
 
     return 0;

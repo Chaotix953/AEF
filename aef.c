@@ -235,7 +235,7 @@ t_AEF *lireFichier(char *dir)
             }
         }
 
-        for (int i = 1; i < taille; i++)
+        for (int i = 0; i < taille; i++)
         {
             for (int j = 0; j < strlen(alphabet); j++)
             {
@@ -382,7 +382,7 @@ t_AEF *saisirAEF()
     } while (continuer == 'o');
     system("cls");
 
-    for (int i = 1; i < taille; i++)
+    for (int i = 0; i < taille; i++)
     {
         for (int j = 0; j < strlen(alphabet); j++)
         {
