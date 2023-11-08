@@ -897,3 +897,70 @@ void trierOrdreCroissant(int *tab, int *taille)
         }
     }
 }
+
+int **matriceTransition2MatriceAdjacence(int ***matriceTransition, int **matriceNbElement, int ligne, int colonnes)
+{
+    int **matriceAdjacence = creerMatrice2D(ligne, ligne, -1);
+    for (int i = 0; i < ligne; i++)
+    {
+        for (int j = 0; j < colonnes; j++)
+        {
+            for (int k = 0; k < matriceNbElement[i][j]; k++)
+            {
+                if (i != matriceTransition[i][j][k])
+                {
+                    matriceAdjacence[i][matriceTransition[i][j][k]] = 1;
+                }
+            }
+        }
+    }
+    return matriceAdjacence;
+}
+
+int DFS(int i, int *visited, int **G, int nbSommet, int dest)
+{
+    int j;
+    if (i == dest)
+    {
+        return 1;
+    }
+    int *tab = (int *)calloc(nbSommet, sizeof(int));
+    for (int j = 0; j < nbSommet; j++)
+    {
+        tab[i] += 1;
+    }
+    if (memcmp(tab, visited, nbSommet * sizeof(int)) == 0)
+    {
+        return 0;
+    }
+    visited[i] = 1;
+    for (j = 0; j < nbSommet; j++)
+    {
+        if (!visited[j] && G[i][j] == 1)
+        {
+            DFS(j, visited, G, nbSommet, dest);
+        }
+    }
+    free(tab);
+}
+
+void supprimerLigne(int **matrice2D, int *lignes, int colonnes, int indexDelete)
+{
+    if (indexDelete < 0 || indexDelete >= *lignes)
+    {
+        printf("L'indice de la ligne à supprimer est invalide.\n");
+        return;
+    }
+
+    // Décaler les lignes vers le haut pour remplir la ligne supprimée
+    for (int i = indexDelete; i < *lignes - 1; i++)
+    {
+        for (int j = 0; j < colonnes; j++)
+        {
+            matrice2D[i][j] = matrice2D[i + 1][j];
+        }
+    }
+
+    // Réduire le nombre de lignes
+    (*lignes)--;
+}

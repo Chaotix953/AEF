@@ -204,12 +204,47 @@ int main()
     // }
 
     t_AEF *aef = lireFichier("matrice2.txt");
-    
+
     afficherAEF(aef);
 
-    // t_AEF *aef_det = transformerAutomateDeterministe(aef, &nbAEF);
+    int **matriceAdjacence = matriceTransition2MatriceAdjacence(aef->matriceTransition, aef->nbElementsMatriceTransition, aef->taille, strlen(aef->alphabet));
 
-    // afficherAEF(aef_det);
+    int *visited = calloc(aef->taille, sizeof(int));
+
+    printf(" etat accessible: \n");
+    for (int i = 0; i < aef->taille; i++)
+    {
+        printf("on cherche un chemin de %d a %d: ", aef->q0, aef->q[i]);
+        printf("%d\n", DFS(0, visited, matriceAdjacence, aef->taille, aef->q[i]));
+    }
+
+    for (int i = 0; i < aef->taille; i++)
+    {
+        free(matriceAdjacence[i]);
+    }
+    free(matriceAdjacence);
+    free(visited);
+
+    matriceAdjacence = matriceTransition2MatriceAdjacence(aef->matriceTransition, aef->nbElementsMatriceTransition, aef->taille, strlen(aef->alphabet));
+
+    visited = calloc(aef->taille, sizeof(int));
+
+    printf(" etat co-accessible: \n");
+    for (int i = 0; i < aef->taille; i++)
+    {
+        for (int j = 0; j < aef->nbF; j++)
+        {
+            printf("on cherche un chemin de %d a %d: ", aef->q[i], aef->f[j]);
+            printf("%d\n", DFS(aef->q[i], visited, matriceAdjacence, aef->taille, aef->f[j]));
+        }
+    }
+
+    for (int i = 0; i < aef->taille; i++)
+    {
+        free(matriceAdjacence[i]);
+    }
+    free(matriceAdjacence);
+    free(visited);
 
     // printf("\naffichage matrice de transition :\n");
     // for (int i = 0; i < aef_det->taille; i++)
@@ -228,7 +263,6 @@ int main()
     //     printf("\n");
     // }
 
-    // suppAEF(aef_det);
     suppAEF(aef);
 
     return 0;

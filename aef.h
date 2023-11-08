@@ -77,4 +77,10 @@ int* supprimerValeur(int *tab, int *taille, int valeur);
 
 void trierOrdreCroissant(int *tab, int *taille);
 
+int **matriceTransition2MatriceAdjacence(int ***matriceTransition, int **matriceNbElement, int ligne, int colonnes);
+
+int DFS(int i, int *visited, int **G, int nbSommet, int dest);
+
+void supprimerLigne(int **matrice2D, int *lignes, int colonnes, int indexDelete);
+
 #endif
