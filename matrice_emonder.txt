@@ -1,0 +1,10 @@
+automate_emonder
+AB
+7
+0
+1
+0 A 1
+0 A 3
+1 A 0
+2 B 1
+5 B 6

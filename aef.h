@@ -21,14 +21,14 @@ typedef struct AEF
 } t_AEF;
 
 // fonction pour creer la matrice de transition
-int ***creerMatrice3D(int lignes, int colonnes);
+int ***creerMatrice3D(int lignes, int colonnes, int x);
 
-int **creerMatrice2D(int lignes, int colonnes);
+int **creerMatrice2D(int lignes, int colonnes, int x);
 
 // creer le tableau avec les differents etats
 int *creerTableauQ(int taille);
 
-//fonction pour detecter des doublons dans une liste
+// fonction pour detecter des doublons dans une liste
 int detecterOccurence(int *tab, int tailleTab, int val);
 
 // fonction pour initialiser un aef
@@ -65,16 +65,22 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF);
 
 int factoriel(int n);
 
-int** combinaisons_v2(int p, int* e, int n, int comb_count);
+int **combinaisons_v2(int p, int *e, int n, int comb_count);
 
-int ***creerTabComb(int* tab, int lignes);
+int ***creerTabComb(int *tab, int lignes);
 
 int contient(int *tab, int taille, int valeur);
 
-int* supprimerDoublons(int *tab, int *taille);
+int *supprimerDoublons(int *tab, int *taille);
 
-int* supprimerValeur(int *tab, int *taille, int valeur);
+int *supprimerValeur(int *tab, int *taille, int valeur);
 
 void trierOrdreCroissant(int *tab, int *taille);
+
+int **matriceTransition2MatriceAdjacence(int ***matriceTransition, int **matriceNbElement, int ligne, int colonnes, char *alphabet);
+
+int DFS(int i, int *visited, int **G, int nbSommet, int dest);
+
+void supprimerLigne(int **matrice2D, int *lignes, int colonnes, int indexDelete);
 
 #endif
