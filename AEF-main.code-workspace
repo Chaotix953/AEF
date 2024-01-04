@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"name": "AEF-main",
+			"path": "."
+		}
+	],
+	"settings": {
+		"git.ignoreLimitWarning": true
+	}
+}

@@ -55,7 +55,7 @@ int *creerTableauQ(int taille)
 }
 
 // fonction pour initialiser un aef
-t_AEF *initAEF(char *nom, int *q, int q0, char *alphabet, int ***matriceTransition, int *f, int taille, int **nbElementsMatriceTransition, int nbF)
+t_AEF *initAEF(char *nom, int *q, int *q0, int nbq0, char *alphabet, int ***matriceTransition, int *f, int taille, int **nbElementsMatriceTransition, int nbF)
 {
     t_AEF *aef = (t_AEF *)malloc(sizeof(t_AEF));
 
@@ -68,7 +68,8 @@ t_AEF *initAEF(char *nom, int *q, int q0, char *alphabet, int ***matriceTransiti
     aef->nbElementsMatriceTransition = nbElementsMatriceTransition;
     aef->q = q;
     aef->q0 = q0;
-    aef->etat = aef->q0;
+    aef->nbq0 = nbq0;
+    aef->etat = aef->q0[0];
     aef->f = f;
     aef->taille = taille;
     aef->matriceTransition = matriceTransition;
@@ -101,6 +102,7 @@ void suppAEF(t_AEF *aef)
     free(aef->f);
 
     free(aef->alphabet);
+    free(aef->q0);
 
     free(aef);
 }
@@ -143,19 +145,20 @@ void transition(t_AEF *aef, char entree)
     }
 }
 
-//fonction pour charger un AEF depuis un fichier
+// fonction pour charger un AEF depuis un fichier
 t_AEF *lireFichier(char *dir)
 {
     t_AEF *aef = NULL;
     int taille = 1;
     int *q = NULL;
-    int q0 = 0;
+    int *q0 = NULL;
     char alphabet[100] = "";
     int *f = NULL;
     char nom[100] = "";
     int ***matrice3D = NULL;
     int **matrice2D = NULL;
     int nbF = 1;
+    int nbq0 = 1;
 
     FILE *fichier = fopen(dir, "r");
 
@@ -167,20 +170,28 @@ t_AEF *lireFichier(char *dir)
         fscanf(fichier, "%s", nom);
         fscanf(fichier, "%s", alphabet);
         fscanf(fichier, "%d", &taille);
-
-        // Allocation des tableaux q et f
         q = creerTableauQ(taille);
-        fscanf(fichier, "%d", &q0);
 
-        // Lecture de la ligne vide
+        fgets(chaine, sizeof(chaine), fichier); // ligne vide
+
+        q0 = (int *)malloc(taille * sizeof(int));
+        int compteur = 0;
         fgets(chaine, sizeof(chaine), fichier);
+        char *token = strtok(chaine, " ");
+        while (token != NULL)
+        {
+            q0[compteur] = atoi(token);
+            compteur++;
+            token = strtok(NULL, " ");
+            q0 = (int *)realloc(q0, (compteur + 1) * sizeof(int));
+        }
+        int nbq0 = compteur;
 
         // Allocation et lecture du tableau f
         f = (int *)malloc(taille * sizeof(int));
-        int compteur = 0;
-
+        compteur = 0;
         fgets(chaine, sizeof(chaine), fichier);
-        char *token = strtok(chaine, " ");
+        token = strtok(chaine, " ");
         while (token != NULL)
         {
             f[compteur] = atoi(token);
@@ -234,7 +245,17 @@ t_AEF *lireFichier(char *dir)
             }
         }
 
-        aef = initAEF(nom, q, q0, alphabet, matrice3D, f, taille, matrice2D, nbF);
+        aef = initAEF(nom, q, q0, nbq0, alphabet, matrice3D, f, taille, matrice2D, nbF);
+
+        for (int i = 1; i < taille; i++)
+        {
+            for (int j = 0; j < strlen(aef->alphabet); j++)
+            {
+                matrice3D[i][j] = (int *)supprimerDoublons(&matrice3D[i][j][0], &matrice2D[i][j]);
+                matrice3D[i][j] = (int *)supprimerValeur(&matrice3D[i][j][0], &matrice2D[i][j], 0);
+                trierOrdreCroissant(&matrice3D[i][j][0], &matrice2D[i][j]);
+            }
+        }
 
         fclose(fichier);
     }
@@ -246,7 +267,7 @@ t_AEF *lireFichier(char *dir)
     return aef;
 }
 
-//fonction pour afficher toute les caracteristiques d'un AEF
+// fonction pour afficher toute les caracteristiques d'un AEF
 void afficherAEF(t_AEF *aef)
 {
     printf("nom : %s\n", aef->nom);
@@ -258,8 +279,13 @@ void afficherAEF(t_AEF *aef)
         printf("%d ", aef->q[i]);
     }
     printf("\n");
-    printf("q0 : %d\n", aef->q0);
-    printf("nbF : %d\n", aef->nbF);
+    printf("nbq0 : %d\n", aef->nbq0);
+    printf("q0 : ");
+    for (int i = 0; i < aef->nbq0; i++)
+    {
+        printf("%d ", aef->q0[i]);
+    }
+    printf("\nnbF : %d\n", aef->nbF);
     printf("f : ");
     for (int i = 0; i < aef->nbF; i++)
     {
@@ -292,12 +318,12 @@ void afficherAEF(t_AEF *aef)
     }
 }
 
-//fonction pour creer un AEF 
-t_AEF *saisirAEF()
+// fonction pour creer un AEF
+t_AEF *saisirAEF() // bug
 {
     int taille = 1;
     int *q = NULL;
-    int q0 = 0;
+    int *q0 = NULL;
     char alphabet[100] = "";
     int *f = NULL;
     char nom[100] = "";
@@ -318,9 +344,18 @@ t_AEF *saisirAEF()
 
     q = creerTableauQ(taille);
 
-    printf("entrer q0\n");
+    printf("combien d'etat initiaux ?\n");
+    int nbq0 = 0;
     fflush(stdin);
-    scanf("%d", &q0);
+    scanf("%d", &nbq0);
+    f = (int *)calloc(nbq0, sizeof(int));
+    printf("f : \n");
+    for (int i = 0; i < nbq0; i++)
+    {
+        printf("entrer q0[%d]\n", i);
+        fflush(stdin);
+        scanf("%d", &q[i]);
+    }
 
     printf("combien d'etat finaux ?\n");
     int nbF = 0;
@@ -383,11 +418,22 @@ t_AEF *saisirAEF()
         }
     }
 
-    t_AEF *aef = initAEF(nom, q, q0, alphabet, matrice3D, f, taille, matrice2D, nbF);
+    t_AEF *aef = initAEF(nom, q, q0, nbq0, alphabet, matrice3D, f, taille, matrice2D, nbF);
+
+    for (int i = 1; i < taille; i++)
+    {
+        for (int j = 0; j < strlen(aef->alphabet); j++)
+        {
+            matrice3D[i][j] = (int *)supprimerDoublons(&matrice3D[i][j][0], &matrice2D[i][j]);
+            matrice3D[i][j] = (int *)supprimerValeur(&matrice3D[i][j][0], &matrice2D[i][j], 0);
+            trierOrdreCroissant(&matrice3D[i][j][0], &matrice2D[i][j]);
+        }
+    }
+
     return aef;
 }
 
-//fonction pour enregistrer un AEF dans un fichier
+// fonction pour enregistrer un AEF dans un fichier
 void enregistrerAEF(t_AEF *aef)
 {
     printf("entrer le nom du fichier .txt\n");
@@ -401,7 +447,11 @@ void enregistrerAEF(t_AEF *aef)
     fprintf(save_file, "%s\n", aef->nom);
     fprintf(save_file, "%s\n", aef->alphabet);
     fprintf(save_file, "%d\n", aef->taille);
-    fprintf(save_file, "%d\n", aef->q0);
+    for (int i = 0; i < aef->nbF; i++)
+    {
+        fprintf(save_file, "%d ", aef->q0[i]);
+    }
+    fprintf(save_file, "\n");
     for (int i = 0; i < aef->nbF; i++)
     {
         fprintf(save_file, "%d ", aef->f[i]);
@@ -423,7 +473,7 @@ void enregistrerAEF(t_AEF *aef)
     fclose(save_file);
 }
 
-//fonction pour supprimer tout les AEF chargé dans le menu
+// fonction pour supprimer tout les AEF chargé dans le menu
 void supprimerAEF(t_AEF **liste_aef, t_AEF *aef, int *nbAEF)
 {
     for (int i = 0; i < *nbAEF; i++)
@@ -442,8 +492,7 @@ void supprimerAEF(t_AEF **liste_aef, t_AEF *aef, int *nbAEF)
     (*nbAEF)--;
 }
 
-
-//fonction pour reconnaitre un mot par un automate
+// fonction pour reconnaitre un mot par un automate
 int reconnaitreMot(t_AEF *aef, char *mot)
 {
     for (int i = 0; i < strlen(mot); i++)
@@ -461,8 +510,7 @@ int reconnaitreMot(t_AEF *aef, char *mot)
     return 0;
 }
 
-
-//fonction pour reconnaitre si un automate est complet
+// fonction pour reconnaitre si un automate est complet
 int verifAutomateComplet(t_AEF *aef)
 {
     if (verifAutomateDeterministe(aef) == 1)
@@ -485,9 +533,10 @@ int verifAutomateComplet(t_AEF *aef)
     return 1;
 }
 
-//fonction pour transformer un automate complet
-void transformerAutomateComplet(t_AEF *aef)
+// fonction pour transformer un automate complet
+t_AEF *transformerAutomateComplet(t_AEF *aef_)
 {
+    t_AEF *aef = initAEF(aef_->nom, aef_->q, aef_->q0, aef_->nbq0, aef_->alphabet, aef_->matriceTransition, aef_->f, aef_->taille, aef_->nbElementsMatriceTransition, aef_->nbF);
     aef->taille++;
 
     int ***newMatrice3D = creerMatrice3D(aef->taille, strlen(aef->alphabet), -1);
@@ -531,9 +580,10 @@ void transformerAutomateComplet(t_AEF *aef)
 
     aef->q = (int *)realloc(aef->q, aef->taille * sizeof(int));
     aef->q[aef->taille - 1] = aef->taille - 1;
+    return aef;
 }
 
-//fonction pour verifier si un AEF est deterministe
+// fonction pour verifier si un AEF est deterministe
 int verifAutomateDeterministe(t_AEF *aef)
 {
     for (int i = 0; i < aef->taille; i++)
@@ -550,18 +600,18 @@ int verifAutomateDeterministe(t_AEF *aef)
     return 1;
 }
 
-//fonction pour transformer un AEF deterministe
-t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
+// fonction pour transformer un AEF deterministe
+t_AEF *transformerAutomateDeterministe(t_AEF *aef)
 {
-    (*nbAEF)++;
     t_AEF *aef_det = NULL;
     int taille = pow(2, aef->taille);
 
     int *q = creerTableauQ(taille);
 
-    int q0 = aef->q0;
+    int *q0 = aef->q0;
+    int nbq0 = aef->nbq0;
 
-    char *alphabet = (char *)malloc(strlen(aef->alphabet)); // +1 pour le caractère nul de fin
+    char *alphabet = (char *)malloc(strlen(aef->alphabet));
     strcpy(alphabet, aef->alphabet);
 
     int *f = (int *)malloc(sizeof(int));
@@ -590,7 +640,7 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
 
     int index = aef->taille + 1;
 
-    for (int p = 2; p < aef->taille + 1; p++) // matrice2.txt ne fonctionne pas
+    for (int p = 2; p < aef->taille + 1; p++)
     {
         int nbComb = factoriel(aef->taille) / (factoriel(p) * factoriel(aef->taille - p));
 
@@ -684,7 +734,7 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
         // printf("} \n");
     }
 
-    aef_det = initAEF(nom, q, q0, alphabet, matrice3D, f, taille, matrice2D, nbF - 1);
+    aef_det = initAEF(nom, q, q0, nbq0, alphabet, matrice3D, f, taille, matrice2D, nbF - 1);
 
     for (int i = 0; i < taille; i++)
     {
@@ -699,7 +749,7 @@ t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF)
     return aef_det;
 }
 
-//fonction pour creer un tableau de combinaison 
+// fonction pour creer un tableau de combinaison
 int ***creerTabComb(int *tab, int lignes)
 {
     int ***tabComb = creerMatrice3D(pow(2, lignes), 2, 0);
@@ -746,7 +796,7 @@ int ***creerTabComb(int *tab, int lignes)
     return tabComb;
 }
 
-//fonction pour calculer une factoriel
+// fonction pour calculer une factoriel
 int factoriel(int n)
 {
     int x = 1;
@@ -757,7 +807,7 @@ int factoriel(int n)
     return x;
 }
 
-//fonction pour creer comb_count p_uplet
+// fonction pour creer comb_count p_uplet
 int **combinaisons_v2(int p, int *e, int n, int comb_count)
 {
     int *indices = NULL; // Tableau pour stocker les indices
@@ -823,7 +873,7 @@ int **combinaisons_v2(int p, int *e, int n, int comb_count)
     return liste_combinaisons;
 }
 
-//fonction pour detecter une valeur et renvoi sa position 
+// fonction pour detecter une valeur et renvoi sa position
 int contient(int *tab, int taille, int valeur)
 {
     for (int i = 0; i < taille; i++)
@@ -836,8 +886,7 @@ int contient(int *tab, int taille, int valeur)
     return 0; // Le tableau ne contient pas la valeur
 }
 
-
-//fonction pour supprimer des doublons dans une liste
+// fonction pour supprimer des doublons dans une liste
 int *supprimerDoublons(int *tab, int *taille)
 {
     if (*taille == 1)
@@ -863,7 +912,7 @@ int *supprimerDoublons(int *tab, int *taille)
     return result;
 }
 
-//fonction pour supprimer une valeur
+// fonction pour supprimer une valeur
 int *supprimerValeur(int *tab, int *taille, int valeur)
 {
     if (*taille == 1)
@@ -889,7 +938,7 @@ int *supprimerValeur(int *tab, int *taille, int valeur)
     return result;
 }
 
-//fonction pour trier par ordre croissant un tableau 
+// fonction pour trier par ordre croissant un tableau
 void trierOrdreCroissant(int *tab, int *taille)
 {
     for (int i = 0; i < *taille - 1; i++)
@@ -906,7 +955,7 @@ void trierOrdreCroissant(int *tab, int *taille)
     }
 }
 
-//fonction pour transformer une matrice de transition en matrice d'adjacence
+// fonction pour transformer une matrice de transition en matrice d'adjacence
 int **matriceTransition2MatriceAdjacence(int ***matriceTransition, int **matriceNbElement, int ligne, int colonnes, char *alphabet)
 {
     int **matriceAdjacence = creerMatrice2D(ligne, ligne, 0); // Initialisez à 0
@@ -925,8 +974,7 @@ int **matriceTransition2MatriceAdjacence(int ***matriceTransition, int **matrice
     return matriceAdjacence;
 }
 
-
-//fonction pour parcourir un graphe en DFS
+// fonction pour parcourir un graphe en DFS
 int DFS(int i, int *visited, int **G, int nbSommet, int dest)
 {
     if (i == dest)
@@ -951,8 +999,7 @@ int DFS(int i, int *visited, int **G, int nbSommet, int dest)
     return 0;
 }
 
-
-//fonction pour supprimer une ligne d'un tableau
+// fonction pour supprimer une ligne d'un tableau
 void supprimerLigne(int **matrice2D, int *lignes, int colonnes, int indexDelete)
 {
     if (indexDelete < 0 || indexDelete >= *lignes)
@@ -972,4 +1019,94 @@ void supprimerLigne(int **matrice2D, int *lignes, int colonnes, int indexDelete)
 
     // Réduire le nombre de lignes
     (*lignes)--;
+}
+
+void supprimerDansMatriceTransition(t_AEF *aef, int val)
+{
+    for (int i = 0; i < aef->taille; i++)
+    {
+        for (int j = 0; j < strlen(aef->alphabet); j++)
+        {
+            aef->matriceTransition[i][j] = (int *)supprimerValeur(aef->matriceTransition[i][j], &(aef->nbElementsMatriceTransition[i][j]), val);
+        }
+    }
+}
+
+t_AEF *transformerAutomateEmonde(t_AEF *aef)
+{
+    t_AEF *aef_em = initAEF(aef->nom, aef->q, aef->q0, aef->nbq0, aef->alphabet, aef->matriceTransition, aef->f, aef->taille, aef->nbElementsMatriceTransition, aef->nbF);
+
+    int **matriceAdjacence = matriceTransition2MatriceAdjacence(aef->matriceTransition, aef->nbElementsMatriceTransition, aef->taille, strlen(aef->alphabet), aef->alphabet);
+
+    printf(" etat accessible: \n");
+    for (int i = 0; i < aef->taille; i++)
+    {
+        for (int j = 0; j < aef->nbq0; j++)
+        {
+            int *visited = calloc(aef->taille, sizeof(int));
+            printf("on cherche un chemin de %d a %d: ", aef->q0[j], aef->q[i]);
+            int isAccessible = DFS(0, visited, matriceAdjacence, aef->taille, aef->q[i]);
+            if (isAccessible == 0)
+            {
+                supprimerDansMatriceTransition(aef_em, i);
+                for (int k = 0; k < strlen(aef_em->alphabet); k++)
+                {
+                    aef_em->nbElementsMatriceTransition[i][k] = 1;
+                    aef_em->matriceTransition[i][k] = (int *)realloc(aef_em->matriceTransition[i][k], sizeof(int));
+                    aef_em->matriceTransition[i][k][0] = -1;
+                }
+            }
+            printf("{%d}\n", isAccessible);
+            free(visited);
+        }
+    }
+
+    printf(" etat co-accessible: \n");
+    for (int i = 0; i < aef->taille; i++)
+    {
+        for (int j = 0; j < aef->nbF; j++)
+        {
+            int *visited = calloc(aef->taille, sizeof(int));
+            printf("on cherche un chemin de %d a %d: ", aef->q[i], aef->f[j]);
+            int isCoAccessible = DFS(aef->q[i], visited, matriceAdjacence, aef->taille, aef->f[j]);
+            if (isCoAccessible == 0)
+            {
+                supprimerDansMatriceTransition(aef_em, i);
+                for (int k = 0; k < strlen(aef_em->alphabet); k++)
+                {
+                    aef_em->nbElementsMatriceTransition[i][k] = 1;
+                    aef_em->matriceTransition[i][k] = (int *)realloc(aef_em->matriceTransition[i][k], sizeof(int));
+                    aef_em->matriceTransition[i][k][0] = -1;
+                }
+            }
+            printf("{%d}\n", isCoAccessible);
+            free(visited);
+        }
+    }
+
+    for (int i = 0; i < aef->taille; i++)
+    {
+        free(matriceAdjacence[i]);
+    }
+    free(matriceAdjacence);
+
+    return aef_em;
+}
+
+t_AEF *complementaireAEF(t_AEF aef)
+{
+    t_AEF *aef_comp = (t_AEF*) malloc(sizeof(t_AEF));
+    aef_comp->nom = aef.nom;
+    aef_comp->q = aef.q;
+    aef_comp->nbq0 = aef.nbF;
+    // aef_comp->q0 = aef_comp->nbq0*sizeof(int);
+    aef_comp->q0 = aef.f;
+    aef_comp->alphabet = aef.alphabet;
+    aef_comp->matriceTransition = aef.matriceTransition;
+    aef_comp->f = aef.q0;
+    aef_comp->nbF = aef.nbq0;
+    aef_comp->taille = aef.taille;
+    aef_comp->nbElementsMatriceTransition = aef.nbElementsMatriceTransition;
+
+    return aef_comp;
 }

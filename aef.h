@@ -11,13 +11,14 @@ typedef struct AEF
     char *nom;
     char *alphabet;
     int *q;
-    int q0;
+    int *q0;
+    int nbq0;
     int taille;
     int *f;
     int ***matriceTransition;
     int **nbElementsMatriceTransition;
-    int etat;
     int nbF;
+    int etat;
 } t_AEF;
 
 // fonction pour creer la matrice de transition
@@ -32,7 +33,7 @@ int *creerTableauQ(int taille);
 int detecterOccurence(int *tab, int tailleTab, int val);
 
 // fonction pour initialiser un aef
-t_AEF *initAEF(char *nom, int *q, int q0, char *alphabet, int ***matriceTransition, int *f, int taille, int **nbElementsMatriceTransition, int nbF);
+t_AEF *initAEF(char *nom, int *q, int *q0, int nbq0, char *alphabet, int ***matriceTransition, int *f, int taille, int **nbElementsMatriceTransition, int nbF);
 
 // fonction pour supprimer un aef
 void suppAEF(t_AEF *aef);
@@ -59,9 +60,9 @@ int verifAutomateDeterministe(t_AEF *aef);
 
 int verifAutomateComplet(t_AEF *aef);
 
-void transformerAutomateComplet(t_AEF *aef);
+t_AEF *transformerAutomateComplet(t_AEF *aef_);
 
-t_AEF *transformerAutomateDeterministe(t_AEF *aef, int *nbAEF);
+t_AEF *transformerAutomateDeterministe(t_AEF *aef);
 
 int factoriel(int n);
 
@@ -82,5 +83,9 @@ int **matriceTransition2MatriceAdjacence(int ***matriceTransition, int **matrice
 int DFS(int i, int *visited, int **G, int nbSommet, int dest);
 
 void supprimerLigne(int **matrice2D, int *lignes, int colonnes, int indexDelete);
+
+t_AEF *transformerAutomateEmonde(t_AEF *aef);
+
+t_AEF *complementaireAEF(t_AEF aef);
 
 #endif
