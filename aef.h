@@ -86,6 +86,6 @@ void supprimerLigne(int **matrice2D, int *lignes, int colonnes, int indexDelete)
 
 t_AEF *transformerAutomateEmonde(t_AEF *aef);
 
-t_AEF *complementaireAEF(t_AEF aef);
+t_AEF *complementaireAEF(t_AEF *aef);
 
 #endif

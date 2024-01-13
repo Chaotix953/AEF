@@ -5,9 +5,16 @@ void afficherMenu(int choix, int nbAEF, t_AEF **liste_aef)
 {
     system("cls"); // Effacer la console
 
-    printf("Editeur d'automate\n");
+    printf("Richy Razafindandy\n");
+    printf("Wissal Zidar\n");
+    printf("Ikbal El Khalidi\n");
+    printf("Hanae Rguig\n");
+    printf("David Boucard\n");
+    printf("Aymane Outimjichtt\n");
 
-    for (int i = 1; i <= 20; i++)
+    printf("\t\tEditeur d'Automate\n");
+
+    for (int i = 1; i <= 21; i++)
     {
         if (i == choix)
         {
@@ -52,16 +59,16 @@ void afficherMenu(int choix, int nbAEF, t_AEF **liste_aef)
             printf("rendre un automate deterministe");
             break;
         case 11:
-            printf("creer le complement d'un automate");
+            printf("complement d'un automate");
             break;
         case 12:
-            printf("creer le miroir d'un automate");
+            printf("miroir d'un automate");
             break;
         case 13:
-            printf("creer le produit de 2 automates");
+            printf("produit de 2 automates");
             break;
         case 14:
-            printf("concatener 2 automates");
+            printf("concatenation de 2 automates");
             break;
         case 15:
             printf("extraire une expression reguliere");
@@ -79,17 +86,23 @@ void afficherMenu(int choix, int nbAEF, t_AEF **liste_aef)
             printf("rendre un automate minimal");
             break;
         case 20:
+            printf("Afficher un AEF");
+            break;
+        case 21:
             printf("Quitter");
             break;
         }
         printf("\n");
     }
 
-    printf("automate charge %d\n", nbAEF);
+    printf("\tautomate charge %d\n", nbAEF);
+
     for (int i = 0; i < nbAEF; i++)
     {
-        printf("    %s\n", liste_aef[i]->nom);
+        printf("\t%s\n", liste_aef[i]->nom);
     }
+
+
 }
 
 void afficherModifier(int choix, int nbAEF, t_AEF **liste_aef)
