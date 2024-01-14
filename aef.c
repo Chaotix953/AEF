@@ -124,24 +124,27 @@ int getIndex(char *alphabet, char entree)
 // fonction pour faire des transitions
 void transition(t_AEF *aef, char entree)
 {
+    if (getIndex(aef->alphabet, entree) == -1)
+    {
+        printf("%c caractere non inclus dans l'alphabet\n", entree);
+    }
     if (aef->nbElementsMatriceTransition[aef->etat][getIndex(aef->alphabet, entree)] != 1)
     {
         printf("transition non determine %d, %c\n", aef->etat, entree);
     }
+
     if (getIndex(aef->alphabet, entree) != -1)
     {
         if (aef->matriceTransition[aef->etat][getIndex(aef->alphabet, entree)][0] != -1)
         {
+            printf("transition de %d(%c) ->", aef->etat, entree);
             aef->etat = aef->matriceTransition[aef->etat][getIndex(aef->alphabet, entree)][0];
+            printf(" %d\n", aef->etat);
         }
         else
         {
             printf("transition non definit %d, %c\n", aef->etat, entree);
         }
-    }
-    else
-    {
-        printf("mot non reconnu par l'automate\n");
     }
 }
 
@@ -484,7 +487,6 @@ void supprimerAEF(t_AEF **liste_aef, t_AEF *aef, int *nbAEF)
             break;
         }
     }
-    (*nbAEF)--;
 }
 
 // fonction pour reconnaitre un mot par un automate
@@ -493,13 +495,12 @@ int reconnaitreMot(t_AEF *aef, char *mot)
     for (int i = 0; i < strlen(mot); i++)
     {
         transition(aef, mot[i]);
-        for (int j = 0; j < strlen(aef->alphabet); j++)
+    }
+    for (int j = 0; j < strlen(aef->alphabet); j++)
+    {
+        if (aef->etat == aef->f[j])
         {
-            if (aef->etat == aef->f[j])
-            {
-                printf("mot reconnu par l'automate\n");
-                return 1;
-            }
+            return 1;
         }
     }
     return 0;
@@ -508,19 +509,16 @@ int reconnaitreMot(t_AEF *aef, char *mot)
 // fonction pour reconnaitre si un automate est complet
 int verifAutomateComplet(t_AEF *aef)
 {
-    if (verifAutomateDeterministe(aef) == 1)
+
+    for (int i = 0; i < aef->taille; i++)
     {
-        for (int i = 0; i < aef->taille; i++)
+        for (int j = 0; j < strlen(aef->alphabet); j++)
         {
-            for (int j = 0; j < strlen(aef->alphabet); j++)
+            for (int k = 0; k < aef->nbElementsMatriceTransition[i][j]; k++)
             {
-                for (int k = 0; k < aef->nbElementsMatriceTransition[i][j]; k++)
+                if (aef->matriceTransition[i][j][k] == -1)
                 {
-                    if (aef->matriceTransition[i][j][k] == -1)
-                    {
-                        printf("automate non complet\n");
-                        return 0;
-                    }
+                    return 0;
                 }
             }
         }
@@ -591,13 +589,16 @@ t_AEF *transformerAutomateComplet(t_AEF *aef)
 // fonction pour verifier si un AEF est deterministe
 int verifAutomateDeterministe(t_AEF *aef)
 {
+    if (aef->nbq0 > 1)
+    {
+        return 0;
+    }
     for (int i = 0; i < aef->taille; i++)
     {
         for (int j = 0; j < strlen(aef->alphabet); j++)
         {
             if (aef->nbElementsMatriceTransition[i][j] > 1)
             {
-                printf("automate non deterministe\n");
                 return 0;
             }
         }

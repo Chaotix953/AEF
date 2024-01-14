@@ -183,6 +183,39 @@ int main()
             }
             else if (choix == 6)
             {
+                if (nbAEF > 0)
+                {
+                    int choix2 = 0;
+                    int key2 = 0;
+                    while (key2 != 13)
+                    {
+                        afficherModifier(choix2, nbAEF, liste_aef);
+                        key2 = _getch();
+                        switch (key2)
+                        {
+                        case 72: // Flèche haut
+                            choix2 = (choix2 > 0) ? choix2 - 1 : nbAEF - 1;
+                            break;
+                        case 80: // Flèche bas
+                            choix2 = (choix2 < nbAEF) ? choix2 + 1 : 0;
+                            break;
+                        }
+                    }
+                    afficherAEF(liste_aef[choix2]);
+                    printf("entrer le mot dans l'automate :\n");
+                    fflush(stdin);
+                    char mot[100] = "";
+                    scanf("%s", mot);
+                    if (reconnaitreMot(liste_aef[choix2], mot) == 1)
+                    {
+                        printf("%s a ete reconnu par %s\n", mot, liste_aef[choix2]->nom);
+                    }
+                    else
+                    {
+                        printf("%s non reconnu par %s\n", mot, liste_aef[choix2]->nom);
+                    }
+                    system("pause");
+                }
             }
             else if (choix == 7) // verif automate complet
             {

@@ -10,7 +10,6 @@ void afficherMenu(int choix, int nbAEF, t_AEF **liste_aef)
     printf("Ikbal El Khalidi\n");
     printf("Hanae Rguig\n");
     printf("David Boucard\n");
-    printf("Aymane Outimjichtt\n");
 
     printf("\t\tEditeur d'Automate\n");
 
