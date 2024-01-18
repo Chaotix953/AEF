@@ -1,7 +1,7 @@
 automate_simple 
 AB
 2
-0
+-1
 1
 0 B 0
 0 A 1

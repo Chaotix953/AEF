@@ -122,15 +122,17 @@ int getIndex(char *alphabet, char entree)
 }
 
 // fonction pour faire des transitions
-void transition(t_AEF *aef, char entree)
+int transition(t_AEF *aef, char entree)
 {
     if (getIndex(aef->alphabet, entree) == -1)
     {
         printf("%c caractere non inclus dans l'alphabet\n", entree);
+        return 0;
     }
     if (aef->nbElementsMatriceTransition[aef->etat][getIndex(aef->alphabet, entree)] != 1)
     {
         printf("transition non determine %d, %c\n", aef->etat, entree);
+        return 0;
     }
 
     if (getIndex(aef->alphabet, entree) != -1)
@@ -140,10 +142,12 @@ void transition(t_AEF *aef, char entree)
             printf("transition de %d(%c) ->", aef->etat, entree);
             aef->etat = aef->matriceTransition[aef->etat][getIndex(aef->alphabet, entree)][0];
             printf(" %d\n", aef->etat);
+            return 1;
         }
         else
         {
             printf("transition non definit %d, %c\n", aef->etat, entree);
+            return 0;
         }
     }
 }
@@ -267,6 +271,15 @@ t_AEF *lireFichier(char *dir)
     else
     {
         printf("Fichier non trouvé\n");
+    }
+
+    if (aef->q0[0] == -1)
+    {
+        aef->nbq0 = 0;
+    }
+    if (aef->f[0] == -1)
+    {
+        aef->nbF = 0;
     }
 
     return aef;
@@ -428,6 +441,15 @@ t_AEF *saisirAEF() // bug
         trierOrdreCroissant(aef->f, &(aef->nbF));
     }
 
+    if (aef->q0[0] == -1)
+    {
+        aef->nbq0 = 0;
+    }
+    if (aef->f[0] == -1)
+    {
+        aef->nbF = 0;
+    }
+
     return aef;
 }
 
@@ -492,9 +514,24 @@ void supprimerAEF(t_AEF **liste_aef, t_AEF *aef, int *nbAEF)
 // fonction pour reconnaitre un mot par un automate
 int reconnaitreMot(t_AEF *aef, char *mot)
 {
+    // question
+    if (aef->nbq0 == 0)
+    {
+        printf("pas de sommet initial\n");
+        return 0;
+    }
+    if (aef->nbF == 0)
+    {
+        printf("pas de sommet final\n");
+        return 0;
+    }
+    //
     for (int i = 0; i < strlen(mot); i++)
     {
-        transition(aef, mot[i]);
+        if (transition(aef, mot[i]) == 0)
+        {
+            return 0;
+        }
     }
     for (int j = 0; j < strlen(aef->alphabet); j++)
     {

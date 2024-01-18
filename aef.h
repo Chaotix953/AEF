@@ -42,7 +42,7 @@ void suppAEF(t_AEF *aef);
 int getIndex(char *alphabet, char entree);
 
 // fonction pour faire des transitions
-void transition(t_AEF *aef, char entree);
+int transition(t_AEF *aef, char entree);
 
 void afficherAEF(t_AEF *aef);
 
